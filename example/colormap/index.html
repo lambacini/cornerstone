@@ -1,0 +1,140 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <!-- twitter bootstrap CSS stylesheet - not required by cornerstone -->
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- cornerstone css - provides some useful css classes -->
+    <link href="../../dist/cornerstone.css" rel="stylesheet">
+
+</head>
+<body>
+<div class="container">
+
+    <h1>
+        colormap/index.html
+    </h1>
+
+    <div class="row">
+        <div class="col-xs-10">
+            <div style="width:512px; padding-top: 5px;">
+                <canvas id="colorbar" width="512px" height="20px"></canvas>
+            </div>
+            <!-- note we disable selection on the top most div -->
+            <div style="width:512px;height:512px;position:relative;color: white;"
+                 class="cornerstone-enabled-image"
+                 oncontextmenu="return false"
+                 unselectable='on'
+                 onselectstart='return false;'
+                 onmousedown='return false;'>
+                <div id="dicomImage"
+                     style="width:512px;height:512px;top:0px;left:0px; position:absolute">
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-2">
+            <label for="opacityImage2"> Colormap </label>
+            <select id="colormaps" style="width:100%"></select>
+        </div>
+    </div>
+</div>
+</body>
+
+<!-- cornerstone depends on jQuery so it must be loaded first-->
+<script src="../jquery.min.js"></script>
+
+<!-- include the cornerstone library -->
+<script src="../../dist/cornerstone.js"></script>
+
+<script src="../dicomParser.js"></script>
+<script src="../cornerstoneMath.js"></script>
+<script src="../cornerstoneTools.js"></script>
+<script src="../cornerstoneWADOImageLoader.js"></script>
+
+<!-- include special code for these examples which provides images -->
+<script src="../exampleImageIdLoader.js"></script>
+
+<script>
+
+    function fillColormapsList() {
+        var $dropdown = $('#colormaps');
+        var colormapsList = cornerstone.colors.getColormapsList();
+
+        colormapsList.forEach(function(colormapItem) {
+            var $option = $('<option></option>')
+                .val(colormapItem.id)
+                .text(colormapItem.name)
+
+            $dropdown.append($option);
+        });
+    }
+
+    $(document).ready(function() {
+        // image enable the dicomImage element
+        var element = $('#dicomImage').get(0);
+        cornerstone.enable(element);
+
+        var host = window.location.href.replace('/index.html','');
+        
+        var imageId = 'example://1';
+        var layer1id;
+
+        cornerstone.loadImage(imageId).then(function(image) {
+            cornerstone.displayImage(element, image);
+        }, function(error) {
+            console.log(error);
+        });
+
+        function colormapChanged() {
+            var colormapId = $('#colormaps').val();
+            var image = cornerstone.getEnabledElement(element).image;
+            var colormap = cornerstone.colors.getColormap(colormapId);
+            var lookupTable = colormap.createLookupTable();
+            var minPixelValue = image.minPixelValue || 0;
+            var maxPixelValue = image.maxPixelValue || 255;
+
+            cornerstone.pixelDataToFalseColorData(image, lookupTable);
+            cornerstone.updateImage(element, true);
+
+            updateColorbar(lookupTable)
+        }
+
+        function updateColorbar(lookupTable) {
+            var canvas = $('#colorbar').get(0);
+            var ctx = canvas.getContext('2d');
+            var height = canvas.height;
+            var width = canvas.width;
+            var colorbar = ctx.createImageData(512, 20);
+
+            lookupTable.setTableRange(0, width);
+
+            for(var x = 0; x < width; x++) {
+                var color = lookupTable.mapValue(x);
+
+                for(var y = 0; y < height; y++) {
+                    var pixel = (x + y * width) * 4;
+                    colorbar.data[pixel] = color[0];
+                    colorbar.data[pixel+1] = color[1];
+                    colorbar.data[pixel+2] = color[2];
+                    colorbar.data[pixel+3] = color[3];
+                }
+            }
+
+            ctx.putImageData(colorbar, 0, 0);
+        }
+        $('#colormaps').change(function() {
+            colormapChanged();
+        });
+
+        fillColormapsList();
+
+        setTimeout(function() {
+            var $dropdown = $('#colormaps');
+
+            $dropdown.val('hot');
+            $dropdown.trigger('change');
+        }, 1);
+    });
+
+</script>
+</html>
