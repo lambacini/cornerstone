@@ -38,6 +38,7 @@
             invalid: false, // true if image needs to be drawn, false if not
             needsRedraw:true,
             options: options,
+            layers:[],
             data : {}
         };
         cornerstone.addEnabledElement(el);

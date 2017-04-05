@@ -1,7 +1,7 @@
 /*! cornerstone - v0.10.4 - 2017-04-05 | (c) 2014 Chris Hafey | https://github.com/chafey/cornerstone */
-if(typeof cornerstone === 'undefined'){
+if (typeof cornerstone === 'undefined') {
     cornerstone = {
-        internal : {},
+        internal: {},
         rendering: {},
         colors: {}
     };
@@ -33,510 +33,763 @@ if(typeof cornerstone === 'undefined'){
 
 }(cornerstone));
 
-(function(cornerstone) {
+(function (cornerstone) {
 
-  var COLOR_BLACK = [0, 0, 0, 255];
+    var COLOR_BLACK = [0, 0, 0, 255];
 
-  // Colormaps
-  // 
-  // All Linear Segmented Colormaps were copied from matplotlib
-  // https://github.com/stefanv/matplotlib/blob/master/lib/matplotlib/_cm.py
+    // Colormaps
+    // 
+    // All Linear Segmented Colormaps were copied from matplotlib
+    // https://github.com/stefanv/matplotlib/blob/master/lib/matplotlib/_cm.py
 
-  var colormapsData = {
-    gray: {
-      name: 'Gray',
-      numColors: 256,
-      gamma: 1,
-      segmentedData: {
-        'red':   [[0, 0, 0], [1, 1, 1]],
-        'green': [[0, 0, 0], [1, 1, 1]],
-        'blue':  [[0, 0, 0], [1, 1, 1]]
-      }
-    },
-    jet: {
-      name: 'Jet',
-      numColors: 256,
-      gamma: 1,
-      segmentedData: {
-        'red': [[0, 0, 0], [0.35 , 0, 0], [0.66 , 1, 1], [0.89, 1, 1], [1, 0.5, 0.5]],
-        'green': [[0, 0, 0], [0.125, 0, 0], [0.375, 1, 1], [0.64, 1, 1], [0.91, 0, 0], [1, 0, 0]],
-        'blue': [[0, 0.5, 0.5], [0.11 , 1, 1], [0.34 , 1, 1], [0.65, 0, 0], [1, 0, 0]]
-      }
-    },
-    hsv: {
-      name: 'HSV',
-      numColors: 256,
-      gamma: 1,
-      segmentedData: {
-        'red': [[0, 1, 1], [0.158730, 1, 1], [0.174603, 0.968750, 0.968750],
-                [0.333333, 0.031250, 0.031250], [0.349206, 0, 0], [0.666667, 0, 0],
-                [0.682540, 0.031250, 0.031250],[0.841270, 0.968750, 0.968750],
-                [0.857143, 1, 1], [1, 1, 1]],
-        'green': [[0, 0, 0],[0.158730, 0.937500, 0.937500], [0.174603, 1, 1],
-                  [0.507937, 1, 1], [0.666667, 0.062500, 0.062500],
-                  [0.682540, 0, 0], [1, 0, 0]],
-        'blue':  [[0, 0, 0], [0.333333, 0, 0], [0.349206, 0.062500, 0.062500],
-                  [0.507937, 1, 1], [0.841270, 1, 1], [0.857143, 0.937500, 0.937500],
-                  [1, 0.09375, 0.09375]]
-      }
-    },
-    hot: {
-      name: 'Hot',
-      numColors: 256,
-      gamma: 1,
-      segmentedData: {
-        'red':   [[0, 0.0416, 0.0416], [0.365079, 1, 1], [1, 1, 1]],
-        'green': [[0, 0, 0], [0.365079, 0, 0], [0.746032, 1, 1], [1, 1, 1]],
-        'blue':  [[0, 0, 0], [0.746032, 0, 0], [1, 1, 1]] 
-      }
-    },
-    cool: {
-      name: 'Cool',
-      numColors: 256,
-      gamma: 1,
-      segmentedData: {
-        'red': [[0, 0, 0], [1, 1, 1]],
-        'green': [[0, 1, 1], [1, 0, 0]],
-        'blue': [[0, 1, 1], [1, 1, 1]]
-      }
-    },
-    spring: {
-      name: 'Spring',
-      numColors: 256,
-      gamma: 1,
-      segmentedData: {
-        'red':   [[0, 1, 1],[1, 1, 1]],
-        'green': [[0, 0, 0],[1, 1, 1]],
-        'blue':  [[0, 1, 1],[1, 0, 0]]
-      }
-    },
-    summer: {
-      name: 'Summer',
-      numColors: 256,
-      gamma: 1,
-      segmentedData: {
-        'red':   [[0, 0, 0],[1, 1, 1]],
-        'green': [[0, 0.5, 0.5],[1, 1, 1]],
-        'blue':  [[0, 0.4, 0.4],[1, 0.4, 0.4]]
-      }
-    },
-    autumn: {
-      name: 'Autumn',
-      numColors: 256,
-      gamma: 1,
-      segmentedData: {
-        'red': [[0, 1, 1], [1, 1, 1]],
-        'green': [[0, 0, 0], [1, 1, 1]],
-        'blue': [[0, 0, 0], [1, 0, 0]]
-      }
-    },
-    winter: {
-      name: 'Winter',
-      numColors: 256,
-      gamma: 1,
-      segmentedData: {
-        'red':   [[0, 0, 0],[1, 0, 0]],
-        'green': [[0, 0, 0],[1, 1, 1]],
-        'blue':  [[0, 1, 1],[1, 0.5, 0.5]]
-      }
-    },
-    bone: {
-      name: 'Bone',
-      numColors: 256,
-      gamma: 1,
-      segmentedData: {
-        'red': [[0, 0, 0], [0.746032, 0.652778, 0.652778], [1, 1, 1]],
-        'green': [[0, 0, 0], [0.365079, 0.319444, 0.319444], [0.746032, 0.777778, 0.777778], [1, 1, 1]],
-        'blue': [[0, 0, 0], [0.365079, 0.444444, 0.444444], [1, 1, 1]]
-      }
-    },
-    copper: {
-      name: 'Copper',
-      numColors: 256,
-      gamma: 1,
-      segmentedData: {
-        'red': [[0, 0, 0], [0.809524, 1, 1], [1, 1, 1]],
-        'green': [[0, 0, 0], [1, 0.7812, 0.7812]],
-        'blue':  [[0, 0, 0], [1, 0.4975, 0.4975]]
-      }
-    },
-    spectral: {
-      name: 'Spectral',
-      numColors: 256,
-      gamma: 1,
-      segmentedData: {
-        'red': [[0, 0, 0], [0.05, 0.4667, 0.4667], [0.10, 0.5333, 0.5333], [0.15, 0, 0],
-                [0.20, 0, 0], [0.25, 0, 0], [0.30, 0, 0], [0.35, 0, 0],
-                [0.40, 0, 0], [0.45, 0, 0], [0.50, 0, 0], [0.55, 0, 0],
-                [0.60, 0, 0], [0.65, 0.7333, 0.7333], [0.70, 0.9333, 0.9333], [0.75, 1, 1],
-                [0.80, 1, 1], [0.85, 1, 1], [0.90, 0.8667, 0.8667], [0.95, 0.80, 0.80],
-                [1, 0.80, 0.80]],
-        'green': [[0, 0, 0], [0.05, 0, 0], [0.10, 0, 0], [0.15, 0, 0],
-                  [0.20, 0, 0], [0.25, 0.4667, 0.4667], [0.30, 0.6000, 0.6000],
-                  [0.35, 0.6667, 0.6667], [0.40, 0.6667, 0.6667], [0.45, 0.6000, 0.6000],
-                  [0.50, 0.7333, 0.7333], [0.55, 0.8667, 0.8667], [0.60, 1, 1], [0.65, 1, 1],
-                  [0.70, 0.9333, 0.9333], [0.75, 0.8000, 0.8000],
-                  [0.80, 0.6000, 0.6000], [0.85, 0, 0],
-                  [0.90, 0, 0], [0.95, 0, 0], [1, 0.80, 0.80]],
-        'blue': [[0, 0, 0], [0.05, 0.5333, 0.5333], [0.10, 0.6000, 0.6000], [0.15, 0.6667, 0.6667],
-                 [0.20, 0.8667, 0.8667], [0.25, 0.8667, 0.8667], [0.30, 0.8667, 0.8667],
-                 [0.35, 0.6667, 0.6667], [0.40, 0.5333, 0.5333], [0.45, 0, 0],
-                 [0.5, 0, 0], [0.55, 0, 0], [0.60, 0, 0], [0.65, 0, 0], [0.70, 0, 0], [0.75, 0, 0],
-                 [0.80, 0, 0], [0.85, 0, 0], [0.90, 0, 0], [0.95, 0, 0], [1, 0.80, 0.80]]
-      }
-    },
-    coolwarm: {
-      name: 'CoolWarm',
-      numColors: 256,
-      gamma: 1,
-      segmentedData: {
-        'red': [[0, 0.2298057, 0.2298057], [0.03125, 0.26623388, 0.26623388],
-                [0.0625, 0.30386891, 0.30386891], [0.09375, 0.342804478, 0.342804478],
-                [0.125, 0.38301334, 0.38301334], [0.15625, 0.424369608, 0.424369608],
-                [0.1875, 0.46666708, 0.46666708], [0.21875, 0.509635204, 0.509635204],
-                [0.25, 0.552953156, 0.552953156], [0.28125, 0.596262162, 0.596262162],
-                [0.3125, 0.639176211, 0.639176211], [0.34375, 0.681291281, 0.681291281],
-                [0.375, 0.722193294, 0.722193294], [0.40625, 0.761464949, 0.761464949],
-                [0.4375, 0.798691636, 0.798691636], [0.46875, 0.833466556, 0.833466556],
-                [0.5, 0.865395197, 0.865395197], [0.53125, 0.897787179, 0.897787179],
-                [0.5625, 0.924127593, 0.924127593], [0.59375, 0.944468518, 0.944468518],
-                [0.625, 0.958852946, 0.958852946], [0.65625, 0.96732803, 0.96732803],
-                [0.6875, 0.969954137, 0.969954137], [0.71875, 0.966811177, 0.966811177],
-                [0.75, 0.958003065, 0.958003065], [0.78125, 0.943660866, 0.943660866],
-                [0.8125, 0.923944917, 0.923944917], [0.84375, 0.89904617, 0.89904617],
-                [0.875, 0.869186849, 0.869186849], [0.90625, 0.834620542, 0.834620542],
-                [0.9375, 0.795631745, 0.795631745], [0.96875, 0.752534934, 0.752534934],
-                [1, 0.705673158, 0.705673158]],
-        'green': [[0, 0.298717966, 0.298717966], [0.03125, 0.353094838, 0.353094838],
-                  [0.0625, 0.406535296, 0.406535296], [0.09375, 0.458757618, 0.458757618],
-                  [0.125, 0.50941904, 0.50941904], [0.15625, 0.558148092, 0.558148092],
-                  [0.1875, 0.604562568, 0.604562568], [0.21875, 0.648280772, 0.648280772],
-                  [0.25, 0.688929332, 0.688929332], [0.28125, 0.726149107, 0.726149107],
-                  [0.3125, 0.759599947, 0.759599947], [0.34375, 0.788964712, 0.788964712],
-                  [0.375, 0.813952739, 0.813952739], [0.40625, 0.834302879, 0.834302879],
-                  [0.4375, 0.849786142, 0.849786142], [0.46875, 0.860207984, 0.860207984],
-                  [0.5, 0.86541021, 0.86541021], [0.53125, 0.848937047, 0.848937047],
-                  [0.5625, 0.827384882, 0.827384882], [0.59375, 0.800927443, 0.800927443],
-                  [0.625, 0.769767752, 0.769767752], [0.65625, 0.734132809, 0.734132809],
-                  [0.6875, 0.694266682, 0.694266682], [0.71875, 0.650421156, 0.650421156],
-                  [0.75, 0.602842431, 0.602842431], [0.78125, 0.551750968, 0.551750968],
-                  [0.8125, 0.49730856, 0.49730856], [0.84375, 0.439559467, 0.439559467],
-                  [0.875, 0.378313092, 0.378313092], [0.90625, 0.312874446, 0.312874446],
-                  [0.9375, 0.24128379, 0.24128379], [0.96875, 0.157246067, 0.157246067],
-                  [1, 0.01555616, 0.01555616]],
-        'blue': [[0, 0.753683153, 0.753683153], [0.03125, 0.801466763, 0.801466763],
-                 [0.0625, 0.84495867, 0.84495867], [0.09375, 0.883725899, 0.883725899],
-                 [0.125, 0.917387822, 0.917387822], [0.15625, 0.945619588, 0.945619588],
-                 [0.1875, 0.968154911, 0.968154911], [0.21875, 0.98478814, 0.98478814],
-                 [0.25, 0.995375608, 0.995375608], [0.28125, 0.999836203, 0.999836203],
-                 [0.3125, 0.998151185, 0.998151185], [0.34375, 0.990363227, 0.990363227],
-                 [0.375, 0.976574709, 0.976574709], [0.40625, 0.956945269, 0.956945269],
-                 [0.4375, 0.931688648, 0.931688648], [0.46875, 0.901068838, 0.901068838],
-                 [0.5, 0.865395561, 0.865395561], [0.53125, 0.820880546, 0.820880546],
-                 [0.5625, 0.774508472, 0.774508472], [0.59375, 0.726736146, 0.726736146],
-                 [0.625, 0.678007945, 0.678007945], [0.65625, 0.628751763, 0.628751763],
-                 [0.6875, 0.579375448, 0.579375448], [0.71875, 0.530263762, 0.530263762],
-                 [0.75, 0.481775914, 0.481775914], [0.78125, 0.434243684, 0.434243684],
-                 [0.8125, 0.387970225, 0.387970225], [0.84375, 0.343229596, 0.343229596],
-                 [0.875, 0.300267182, 0.300267182], [0.90625, 0.259301199, 0.259301199],
-                 [0.9375, 0.220525627, 0.220525627], [0.96875, 0.184115123, 0.184115123],
-                 [1, 0.150232812, 0.150232812]]
-      }
-    },
-    blues: {
-      name: 'Blues',
-      numColors: 256,
-      gamma: 1,
-      segmentedData: {
-        'red': [[0, 0.9686274528503418, 0.9686274528503418], [0.125, 0.87058824300765991, 0.87058824300765991],
-                [0.25, 0.7764706015586853, 0.7764706015586853], [0.375, 0.61960786581039429, 0.61960786581039429],
-                [0.5, 0.41960784792900085, 0.41960784792900085], [0.625, 0.25882354378700256, 0.25882354378700256],
-                [0.75, 0.12941177189350128, 0.12941177189350128], [0.875, 0.031372550874948502, 0.031372550874948502],
-                [1, 0.031372550874948502, 0.031372550874948502]],
-        'green': [[0, 0.9843137264251709, 0.9843137264251709], [0.125, 0.92156863212585449, 0.92156863212585449],
-                  [0.25, 0.85882353782653809, 0.85882353782653809], [0.375, 0.7921568751335144, 0.7921568751335144],
-                  [0.5, 0.68235296010971069, 0.68235296010971069], [0.625, 0.57254904508590698, 0.57254904508590698],
-                  [0.75, 0.44313725829124451, 0.44313725829124451], [0.875, 0.31764706969261169, 0.31764706969261169],
-                  [1, 0.18823529779911041, 0.18823529779911041]],
-        'blue': [[0, 1, 1], [0.125, 0.9686274528503418, 0.9686274528503418], [0.25, 0.93725490570068359, 0.93725490570068359],
-                 [0.375, 0.88235294818878174, 0.88235294818878174], [0.5, 0.83921569585800171, 0.83921569585800171],
-                 [0.625, 0.7764706015586853, 0.7764706015586853], [0.75, 0.70980393886566162, 0.70980393886566162],
-                 [0.875, 0.61176472902297974, 0.61176472902297974], [1, 0.41960784792900085, 0.41960784792900085]]
-      }
+    var colormapsData = {
+        gray: {
+            name: 'Gray',
+            numColors: 256,
+            gamma: 1,
+            segmentedData: {
+                'red': [
+                    [0, 0, 0],
+                    [1, 1, 1]
+                ],
+                'green': [
+                    [0, 0, 0],
+                    [1, 1, 1]
+                ],
+                'blue': [
+                    [0, 0, 0],
+                    [1, 1, 1]
+                ]
+            }
+        },
+        jet: {
+            name: 'Jet',
+            numColors: 256,
+            gamma: 1,
+            segmentedData: {
+                'red': [
+                    [0, 0, 0],
+                    [0.35, 0, 0],
+                    [0.66, 1, 1],
+                    [0.89, 1, 1],
+                    [1, 0.5, 0.5]
+                ],
+                'green': [
+                    [0, 0, 0],
+                    [0.125, 0, 0],
+                    [0.375, 1, 1],
+                    [0.64, 1, 1],
+                    [0.91, 0, 0],
+                    [1, 0, 0]
+                ],
+                'blue': [
+                    [0, 0.5, 0.5],
+                    [0.11, 1, 1],
+                    [0.34, 1, 1],
+                    [0.65, 0, 0],
+                    [1, 0, 0]
+                ]
+            }
+        },
+        hsv: {
+            name: 'HSV',
+            numColors: 256,
+            gamma: 1,
+            segmentedData: {
+                'red': [
+                    [0, 1, 1],
+                    [0.158730, 1, 1],
+                    [0.174603, 0.968750, 0.968750],
+                    [0.333333, 0.031250, 0.031250],
+                    [0.349206, 0, 0],
+                    [0.666667, 0, 0],
+                    [0.682540, 0.031250, 0.031250],
+                    [0.841270, 0.968750, 0.968750],
+                    [0.857143, 1, 1],
+                    [1, 1, 1]
+                ],
+                'green': [
+                    [0, 0, 0],
+                    [0.158730, 0.937500, 0.937500],
+                    [0.174603, 1, 1],
+                    [0.507937, 1, 1],
+                    [0.666667, 0.062500, 0.062500],
+                    [0.682540, 0, 0],
+                    [1, 0, 0]
+                ],
+                'blue': [
+                    [0, 0, 0],
+                    [0.333333, 0, 0],
+                    [0.349206, 0.062500, 0.062500],
+                    [0.507937, 1, 1],
+                    [0.841270, 1, 1],
+                    [0.857143, 0.937500, 0.937500],
+                    [1, 0.09375, 0.09375]
+                ]
+            }
+        },
+        hot: {
+            name: 'Hot',
+            numColors: 256,
+            gamma: 1,
+            segmentedData: {
+                'red': [
+                    [0, 0.0416, 0.0416],
+                    [0.365079, 1, 1],
+                    [1, 1, 1]
+                ],
+                'green': [
+                    [0, 0, 0],
+                    [0.365079, 0, 0],
+                    [0.746032, 1, 1],
+                    [1, 1, 1]
+                ],
+                'blue': [
+                    [0, 0, 0],
+                    [0.746032, 0, 0],
+                    [1, 1, 1]
+                ]
+            }
+        },
+        cool: {
+            name: 'Cool',
+            numColors: 256,
+            gamma: 1,
+            segmentedData: {
+                'red': [
+                    [0, 0, 0],
+                    [1, 1, 1]
+                ],
+                'green': [
+                    [0, 1, 1],
+                    [1, 0, 0]
+                ],
+                'blue': [
+                    [0, 1, 1],
+                    [1, 1, 1]
+                ]
+            }
+        },
+        spring: {
+            name: 'Spring',
+            numColors: 256,
+            gamma: 1,
+            segmentedData: {
+                'red': [
+                    [0, 1, 1],
+                    [1, 1, 1]
+                ],
+                'green': [
+                    [0, 0, 0],
+                    [1, 1, 1]
+                ],
+                'blue': [
+                    [0, 1, 1],
+                    [1, 0, 0]
+                ]
+            }
+        },
+        summer: {
+            name: 'Summer',
+            numColors: 256,
+            gamma: 1,
+            segmentedData: {
+                'red': [
+                    [0, 0, 0],
+                    [1, 1, 1]
+                ],
+                'green': [
+                    [0, 0.5, 0.5],
+                    [1, 1, 1]
+                ],
+                'blue': [
+                    [0, 0.4, 0.4],
+                    [1, 0.4, 0.4]
+                ]
+            }
+        },
+        autumn: {
+            name: 'Autumn',
+            numColors: 256,
+            gamma: 1,
+            segmentedData: {
+                'red': [
+                    [0, 1, 1],
+                    [1, 1, 1]
+                ],
+                'green': [
+                    [0, 0, 0],
+                    [1, 1, 1]
+                ],
+                'blue': [
+                    [0, 0, 0],
+                    [1, 0, 0]
+                ]
+            }
+        },
+        winter: {
+            name: 'Winter',
+            numColors: 256,
+            gamma: 1,
+            segmentedData: {
+                'red': [
+                    [0, 0, 0],
+                    [1, 0, 0]
+                ],
+                'green': [
+                    [0, 0, 0],
+                    [1, 1, 1]
+                ],
+                'blue': [
+                    [0, 1, 1],
+                    [1, 0.5, 0.5]
+                ]
+            }
+        },
+        bone: {
+            name: 'Bone',
+            numColors: 256,
+            gamma: 1,
+            segmentedData: {
+                'red': [
+                    [0, 0, 0],
+                    [0.746032, 0.652778, 0.652778],
+                    [1, 1, 1]
+                ],
+                'green': [
+                    [0, 0, 0],
+                    [0.365079, 0.319444, 0.319444],
+                    [0.746032, 0.777778, 0.777778],
+                    [1, 1, 1]
+                ],
+                'blue': [
+                    [0, 0, 0],
+                    [0.365079, 0.444444, 0.444444],
+                    [1, 1, 1]
+                ]
+            }
+        },
+        copper: {
+            name: 'Copper',
+            numColors: 256,
+            gamma: 1,
+            segmentedData: {
+                'red': [
+                    [0, 0, 0],
+                    [0.809524, 1, 1],
+                    [1, 1, 1]
+                ],
+                'green': [
+                    [0, 0, 0],
+                    [1, 0.7812, 0.7812]
+                ],
+                'blue': [
+                    [0, 0, 0],
+                    [1, 0.4975, 0.4975]
+                ]
+            }
+        },
+        spectral: {
+            name: 'Spectral',
+            numColors: 256,
+            gamma: 1,
+            segmentedData: {
+                'red': [
+                    [0, 0, 0],
+                    [0.05, 0.4667, 0.4667],
+                    [0.10, 0.5333, 0.5333],
+                    [0.15, 0, 0],
+                    [0.20, 0, 0],
+                    [0.25, 0, 0],
+                    [0.30, 0, 0],
+                    [0.35, 0, 0],
+                    [0.40, 0, 0],
+                    [0.45, 0, 0],
+                    [0.50, 0, 0],
+                    [0.55, 0, 0],
+                    [0.60, 0, 0],
+                    [0.65, 0.7333, 0.7333],
+                    [0.70, 0.9333, 0.9333],
+                    [0.75, 1, 1],
+                    [0.80, 1, 1],
+                    [0.85, 1, 1],
+                    [0.90, 0.8667, 0.8667],
+                    [0.95, 0.80, 0.80],
+                    [1, 0.80, 0.80]
+                ],
+                'green': [
+                    [0, 0, 0],
+                    [0.05, 0, 0],
+                    [0.10, 0, 0],
+                    [0.15, 0, 0],
+                    [0.20, 0, 0],
+                    [0.25, 0.4667, 0.4667],
+                    [0.30, 0.6000, 0.6000],
+                    [0.35, 0.6667, 0.6667],
+                    [0.40, 0.6667, 0.6667],
+                    [0.45, 0.6000, 0.6000],
+                    [0.50, 0.7333, 0.7333],
+                    [0.55, 0.8667, 0.8667],
+                    [0.60, 1, 1],
+                    [0.65, 1, 1],
+                    [0.70, 0.9333, 0.9333],
+                    [0.75, 0.8000, 0.8000],
+                    [0.80, 0.6000, 0.6000],
+                    [0.85, 0, 0],
+                    [0.90, 0, 0],
+                    [0.95, 0, 0],
+                    [1, 0.80, 0.80]
+                ],
+                'blue': [
+                    [0, 0, 0],
+                    [0.05, 0.5333, 0.5333],
+                    [0.10, 0.6000, 0.6000],
+                    [0.15, 0.6667, 0.6667],
+                    [0.20, 0.8667, 0.8667],
+                    [0.25, 0.8667, 0.8667],
+                    [0.30, 0.8667, 0.8667],
+                    [0.35, 0.6667, 0.6667],
+                    [0.40, 0.5333, 0.5333],
+                    [0.45, 0, 0],
+                    [0.5, 0, 0],
+                    [0.55, 0, 0],
+                    [0.60, 0, 0],
+                    [0.65, 0, 0],
+                    [0.70, 0, 0],
+                    [0.75, 0, 0],
+                    [0.80, 0, 0],
+                    [0.85, 0, 0],
+                    [0.90, 0, 0],
+                    [0.95, 0, 0],
+                    [1, 0.80, 0.80]
+                ]
+            }
+        },
+        coolwarm: {
+            name: 'CoolWarm',
+            numColors: 256,
+            gamma: 1,
+            segmentedData: {
+                'red': [
+                    [0, 0.2298057, 0.2298057],
+                    [0.03125, 0.26623388, 0.26623388],
+                    [0.0625, 0.30386891, 0.30386891],
+                    [0.09375, 0.342804478, 0.342804478],
+                    [0.125, 0.38301334, 0.38301334],
+                    [0.15625, 0.424369608, 0.424369608],
+                    [0.1875, 0.46666708, 0.46666708],
+                    [0.21875, 0.509635204, 0.509635204],
+                    [0.25, 0.552953156, 0.552953156],
+                    [0.28125, 0.596262162, 0.596262162],
+                    [0.3125, 0.639176211, 0.639176211],
+                    [0.34375, 0.681291281, 0.681291281],
+                    [0.375, 0.722193294, 0.722193294],
+                    [0.40625, 0.761464949, 0.761464949],
+                    [0.4375, 0.798691636, 0.798691636],
+                    [0.46875, 0.833466556, 0.833466556],
+                    [0.5, 0.865395197, 0.865395197],
+                    [0.53125, 0.897787179, 0.897787179],
+                    [0.5625, 0.924127593, 0.924127593],
+                    [0.59375, 0.944468518, 0.944468518],
+                    [0.625, 0.958852946, 0.958852946],
+                    [0.65625, 0.96732803, 0.96732803],
+                    [0.6875, 0.969954137, 0.969954137],
+                    [0.71875, 0.966811177, 0.966811177],
+                    [0.75, 0.958003065, 0.958003065],
+                    [0.78125, 0.943660866, 0.943660866],
+                    [0.8125, 0.923944917, 0.923944917],
+                    [0.84375, 0.89904617, 0.89904617],
+                    [0.875, 0.869186849, 0.869186849],
+                    [0.90625, 0.834620542, 0.834620542],
+                    [0.9375, 0.795631745, 0.795631745],
+                    [0.96875, 0.752534934, 0.752534934],
+                    [1, 0.705673158, 0.705673158]
+                ],
+                'green': [
+                    [0, 0.298717966, 0.298717966],
+                    [0.03125, 0.353094838, 0.353094838],
+                    [0.0625, 0.406535296, 0.406535296],
+                    [0.09375, 0.458757618, 0.458757618],
+                    [0.125, 0.50941904, 0.50941904],
+                    [0.15625, 0.558148092, 0.558148092],
+                    [0.1875, 0.604562568, 0.604562568],
+                    [0.21875, 0.648280772, 0.648280772],
+                    [0.25, 0.688929332, 0.688929332],
+                    [0.28125, 0.726149107, 0.726149107],
+                    [0.3125, 0.759599947, 0.759599947],
+                    [0.34375, 0.788964712, 0.788964712],
+                    [0.375, 0.813952739, 0.813952739],
+                    [0.40625, 0.834302879, 0.834302879],
+                    [0.4375, 0.849786142, 0.849786142],
+                    [0.46875, 0.860207984, 0.860207984],
+                    [0.5, 0.86541021, 0.86541021],
+                    [0.53125, 0.848937047, 0.848937047],
+                    [0.5625, 0.827384882, 0.827384882],
+                    [0.59375, 0.800927443, 0.800927443],
+                    [0.625, 0.769767752, 0.769767752],
+                    [0.65625, 0.734132809, 0.734132809],
+                    [0.6875, 0.694266682, 0.694266682],
+                    [0.71875, 0.650421156, 0.650421156],
+                    [0.75, 0.602842431, 0.602842431],
+                    [0.78125, 0.551750968, 0.551750968],
+                    [0.8125, 0.49730856, 0.49730856],
+                    [0.84375, 0.439559467, 0.439559467],
+                    [0.875, 0.378313092, 0.378313092],
+                    [0.90625, 0.312874446, 0.312874446],
+                    [0.9375, 0.24128379, 0.24128379],
+                    [0.96875, 0.157246067, 0.157246067],
+                    [1, 0.01555616, 0.01555616]
+                ],
+                'blue': [
+                    [0, 0.753683153, 0.753683153],
+                    [0.03125, 0.801466763, 0.801466763],
+                    [0.0625, 0.84495867, 0.84495867],
+                    [0.09375, 0.883725899, 0.883725899],
+                    [0.125, 0.917387822, 0.917387822],
+                    [0.15625, 0.945619588, 0.945619588],
+                    [0.1875, 0.968154911, 0.968154911],
+                    [0.21875, 0.98478814, 0.98478814],
+                    [0.25, 0.995375608, 0.995375608],
+                    [0.28125, 0.999836203, 0.999836203],
+                    [0.3125, 0.998151185, 0.998151185],
+                    [0.34375, 0.990363227, 0.990363227],
+                    [0.375, 0.976574709, 0.976574709],
+                    [0.40625, 0.956945269, 0.956945269],
+                    [0.4375, 0.931688648, 0.931688648],
+                    [0.46875, 0.901068838, 0.901068838],
+                    [0.5, 0.865395561, 0.865395561],
+                    [0.53125, 0.820880546, 0.820880546],
+                    [0.5625, 0.774508472, 0.774508472],
+                    [0.59375, 0.726736146, 0.726736146],
+                    [0.625, 0.678007945, 0.678007945],
+                    [0.65625, 0.628751763, 0.628751763],
+                    [0.6875, 0.579375448, 0.579375448],
+                    [0.71875, 0.530263762, 0.530263762],
+                    [0.75, 0.481775914, 0.481775914],
+                    [0.78125, 0.434243684, 0.434243684],
+                    [0.8125, 0.387970225, 0.387970225],
+                    [0.84375, 0.343229596, 0.343229596],
+                    [0.875, 0.300267182, 0.300267182],
+                    [0.90625, 0.259301199, 0.259301199],
+                    [0.9375, 0.220525627, 0.220525627],
+                    [0.96875, 0.184115123, 0.184115123],
+                    [1, 0.150232812, 0.150232812]
+                ]
+            }
+        },
+        blues: {
+            name: 'Blues',
+            numColors: 256,
+            gamma: 1,
+            segmentedData: {
+                'red': [
+                    [0, 0.9686274528503418, 0.9686274528503418],
+                    [0.125, 0.87058824300765991, 0.87058824300765991],
+                    [0.25, 0.7764706015586853, 0.7764706015586853],
+                    [0.375, 0.61960786581039429, 0.61960786581039429],
+                    [0.5, 0.41960784792900085, 0.41960784792900085],
+                    [0.625, 0.25882354378700256, 0.25882354378700256],
+                    [0.75, 0.12941177189350128, 0.12941177189350128],
+                    [0.875, 0.031372550874948502, 0.031372550874948502],
+                    [1, 0.031372550874948502, 0.031372550874948502]
+                ],
+                'green': [
+                    [0, 0.9843137264251709, 0.9843137264251709],
+                    [0.125, 0.92156863212585449, 0.92156863212585449],
+                    [0.25, 0.85882353782653809, 0.85882353782653809],
+                    [0.375, 0.7921568751335144, 0.7921568751335144],
+                    [0.5, 0.68235296010971069, 0.68235296010971069],
+                    [0.625, 0.57254904508590698, 0.57254904508590698],
+                    [0.75, 0.44313725829124451, 0.44313725829124451],
+                    [0.875, 0.31764706969261169, 0.31764706969261169],
+                    [1, 0.18823529779911041, 0.18823529779911041]
+                ],
+                'blue': [
+                    [0, 1, 1],
+                    [0.125, 0.9686274528503418, 0.9686274528503418],
+                    [0.25, 0.93725490570068359, 0.93725490570068359],
+                    [0.375, 0.88235294818878174, 0.88235294818878174],
+                    [0.5, 0.83921569585800171, 0.83921569585800171],
+                    [0.625, 0.7764706015586853, 0.7764706015586853],
+                    [0.75, 0.70980393886566162, 0.70980393886566162],
+                    [0.875, 0.61176472902297974, 0.61176472902297974],
+                    [1, 0.41960784792900085, 0.41960784792900085]
+                ]
+            }
+        }
     }
-  }
 
-  // Generate linearly spaced vectors
-  // http://cens.ioc.ee/local/man/matlab/techdoc/ref/linspace.html
-  function linspace(a, b, n) {
-    n = n == null ? 100 : n;
+    // Generate linearly spaced vectors
+    // http://cens.ioc.ee/local/man/matlab/techdoc/ref/linspace.html
+    function linspace(a, b, n) {
+        n = n == null ? 100 : n;
 
-    var increment = (b - a) / (n - 1);
-    var vector = [];
+        var increment = (b - a) / (n - 1);
+        var vector = [];
 
-    while(n-- > 0) {
-      vector.push(a);
-      a += increment;
-    }
-
-    // Make sure the last item will always be "b" because most of the
-    // time we'll get numbers like 1.0000000000000002 instead of 1.
-    vector[vector.length - 1] = b;
-
-    return vector;
-  }
-
-  // Return the number of elements smaller than "elem" (binary search)
-  function getRank(array, elem) {
-    var left = 0;
-    var right = array.length - 1;
-
-    while(left <= right) {
-      var mid = left + Math.floor((right - left) / 2);
-      var midElem = array[mid];
-
-      if(midElem === elem) {
-        return mid;
-      } else if(elem < midElem) {
-        right = mid - 1;
-      } else {
-        left = mid + 1;
-      }
-    }
-
-    return left;
-  }
-
-  // Find the indices into a sorted array a such that, if the corresponding elements
-  // in v were inserted before the indices, the order of a would be preserved.
-  // http://lagrange.univ-lyon1.fr/docs/numpy/1.11.0/reference/generated/numpy.searchsorted.html
-  function searchSorted(inputArray, values) {
-    var i;
-    var indexes = [];
-    var len = values.length;
-
-    inputArray.sort(function(a, b) {
-      return a - b;
-    });
-
-    for(i = 0; i < len; i++) {
-      indexes[i] = getRank(inputArray, values[i]);
-    }
-
-    return indexes;
-  }
-
-  // Create an *N* -element 1-d lookup table
-  // 
-  // *data* represented by a list of x,y0,y1 mapping correspondences. Each element in this
-  // list represents how a value between 0 and 1 (inclusive) represented by x is mapped to
-  // a corresponding value between 0 and 1 (inclusive). The two values of y are to allow for
-  // discontinuous mapping functions (say as might be found in a sawtooth) where y0 represents
-  // the value of y for values of x <= to that given, and y1 is the value to be used for x >
-  // than that given). The list must start with x=0, end with x=1, and all values of x must be
-  // in increasing order. Values between the given mapping points are determined by simple linear
-  // interpolation.
-  // 
-  // The function returns an array "result" where result[x*(N-1)] gives the closest value for
-  // values of x between 0 and 1.
-  function makeMappingArray(N, data, gamma) {
-    var i;
-    var x = [];
-    var y0 = [];
-    var y1 = [];
-    var lut = [];
-
-    gamma = gamma == null ? 1 : gamma;
-
-    for(i = 0; i < data.length; i++) {
-      var element = data[i];
-
-      x.push((N - 1) * element[0]);
-      y0.push(element[1]);
-      y1.push(element[1]);
-    }
-
-    var xLinSpace = linspace(0, 1, N);
-    for(i = 0; i < N; i++) {
-      xLinSpace[i] = (N - 1) * Math.pow(xLinSpace[i], gamma);
-    }
-
-    var xLinSpaceIndexes = searchSorted(x, xLinSpace);
-
-    for(i = 1; i < N - 1; i++) {
-      var index = xLinSpaceIndexes[i];
-      var colorPercent = ((xLinSpace[i] - x[index - 1]) / (x[index] - x[index - 1]));
-      var colorDelta = (y0[index] - y1[index - 1])
-
-      lut[i] = colorPercent * colorDelta + y1[index - 1];
-    }
-
-    lut[0] = y1[0];
-    lut[N-1] = y0[data.length - 1];
-
-    return lut;
-  }
-
-  // Colormap based on lookup tables using linear segments.
-  // 
-  // The lookup table is generated using linear interpolation for each
-  // primary color, with the 0-1 domain divided into any number of
-  // segments.
-  //
-  // https://github.com/stefanv/matplotlib/blob/3f1a23755e86fef97d51e30e106195f34425c9e3/lib/matplotlib/colors.py#L663
-  function createLinearSegmentedColormap(segmentedData, N, gamma) {
-    var i;
-    var lut = [];
-
-    N = N == null ? 256 : N;
-    gamma = gamma == null ? 1 : gamma;
-
-    var redLut = makeMappingArray(N, segmentedData.red, gamma);
-    var greenLut = makeMappingArray(N, segmentedData.green, gamma);
-    var blueLut = makeMappingArray(N, segmentedData.blue, gamma);
-
-    for(i = 0; i < N; i++) {
-      var red = Math.round(redLut[i] * 255);
-      var green = Math.round(greenLut[i] * 255);
-      var blue = Math.round(blueLut[i] * 255);
-      var rgba = [red, green, blue, 255];
-
-      lut.push(rgba);
-    }
-
-    return lut;
-  }
-
-  /*
-   * Return all colormaps (id and name) available
-   */
-  function getColormapsList() {
-    var colormaps = [];
-    var keys = Object.keys(colormapsData);
-
-    keys.forEach(function(key) {
-      if(colormapsData.hasOwnProperty(key)) {
-        var colormap = colormapsData[key];
-
-        colormaps.push({
-          id: key,
-          name: colormap.name
-        });
-      }
-    });
-
-    return colormaps;
-  }
-
-  function getColormap(id, colormapData) {
-    var colormap = colormapsData[id];
-
-    if(!colormap) {
-      colormap = colormapsData[id] = colormapData || {
-        name: '',
-        colors: []
-      }
-    }
-
-    if(!colormap.colors && colormap.segmentedData) {
-      colormap.colors = createLinearSegmentedColormap(colormap.segmentedData, colormap.numColors, colormap.gamma);
-    }
-
-    return {
-      getColorSchemeName: function(index) {
-        return colormap.name;
-      },
-
-      setColorSchemeName: function(name) {
-        colormap.name = name;
-      },
-
-      getNumberOfColors: function() {
-        return colormap.colors.length;
-      },
-
-      setNumberOfColors: function(numColors) {
-        while(colormap.colors.length < numColors) {
-          colormap.colors.push(COLOR_BLACK);
+        while (n-- > 0) {
+            vector.push(a);
+            a += increment;
         }
 
-        colormap.colors.length = numColors;
-      },
+        // Make sure the last item will always be "b" because most of the
+        // time we'll get numbers like 1.0000000000000002 instead of 1.
+        vector[vector.length - 1] = b;
 
-      getColor: function(index) {
-        if(this.isValidIndex(index)) {
-          return colormap.colors[index];
+        return vector;
+    }
+
+    // Return the number of elements smaller than "elem" (binary search)
+    function getRank(array, elem) {
+        var left = 0;
+        var right = array.length - 1;
+
+        while (left <= right) {
+            var mid = left + Math.floor((right - left) / 2);
+            var midElem = array[mid];
+
+            if (midElem === elem) {
+                return mid;
+            } else if (elem < midElem) {
+                right = mid - 1;
+            } else {
+                left = mid + 1;
+            }
         }
 
-        return COLOR_BLACK;
-      },
+        return left;
+    }
 
-      getColorRepeating: function(index) {
-        var numColors = colormap.colors.length;
-        index = numColors ? index % numColors : 0;
-
-        return this.getColor(index);
-      },
-
-      setColor: function(index, rgba) {
-        if(this.isValidIndex(index)) {
-          colormap.colors[index] = rgba;
-        }
-      },
-
-      addColor: function(rgba) {
-        colormap.colors.push(rgba);
-      },
-
-      insertColor: function(index, rgba) {
-        if(this.isValidIndex(index)) {
-          colormap.colors.splice(index, 0, rgba);
-        }
-      },
-
-      removeColor: function(index) {
-        if(this.isValidIndex(index)) {
-          colormap.colors.splice(index, 1);
-        }
-      },
-
-      clearColors: function() {
-        colormap.colors = [];
-      },
-
-      buildLookupTable: function(lut) {
-        if(!lut) {
-          return;
-        }
-
+    // Find the indices into a sorted array a such that, if the corresponding elements
+    // in v were inserted before the indices, the order of a would be preserved.
+    // http://lagrange.univ-lyon1.fr/docs/numpy/1.11.0/reference/generated/numpy.searchsorted.html
+    function searchSorted(inputArray, values) {
         var i;
-        var numColors = colormap.colors.length;
+        var indexes = [];
+        var len = values.length;
 
-        lut.setNumberOfTableValues(numColors);
+        inputArray.sort(function (a, b) {
+            return a - b;
+        });
 
-        for(i = 0; i < numColors; i++) {
-          lut.setTableValue(i, colormap.colors[i]);
+        for (i = 0; i < len; i++) {
+            indexes[i] = getRank(inputArray, values[i]);
         }
-      },
 
-      createLookupTable: function() {
-        var lut = new cornerstone.colors.LookupTable();
-        this.buildLookupTable(lut);
+        return indexes;
+    }
+
+    // Create an *N* -element 1-d lookup table
+    // 
+    // *data* represented by a list of x,y0,y1 mapping correspondences. Each element in this
+    // list represents how a value between 0 and 1 (inclusive) represented by x is mapped to
+    // a corresponding value between 0 and 1 (inclusive). The two values of y are to allow for
+    // discontinuous mapping functions (say as might be found in a sawtooth) where y0 represents
+    // the value of y for values of x <= to that given, and y1 is the value to be used for x >
+    // than that given). The list must start with x=0, end with x=1, and all values of x must be
+    // in increasing order. Values between the given mapping points are determined by simple linear
+    // interpolation.
+    // 
+    // The function returns an array "result" where result[x*(N-1)] gives the closest value for
+    // values of x between 0 and 1.
+    function makeMappingArray(N, data, gamma) {
+        var i;
+        var x = [];
+        var y0 = [];
+        var y1 = [];
+        var lut = [];
+
+        gamma = gamma == null ? 1 : gamma;
+
+        for (i = 0; i < data.length; i++) {
+            var element = data[i];
+
+            x.push((N - 1) * element[0]);
+            y0.push(element[1]);
+            y1.push(element[1]);
+        }
+
+        var xLinSpace = linspace(0, 1, N);
+        for (i = 0; i < N; i++) {
+            xLinSpace[i] = (N - 1) * Math.pow(xLinSpace[i], gamma);
+        }
+
+        var xLinSpaceIndexes = searchSorted(x, xLinSpace);
+
+        for (i = 1; i < N - 1; i++) {
+            var index = xLinSpaceIndexes[i];
+            var colorPercent = ((xLinSpace[i] - x[index - 1]) / (x[index] - x[index - 1]));
+            var colorDelta = (y0[index] - y1[index - 1])
+
+            lut[i] = colorPercent * colorDelta + y1[index - 1];
+        }
+
+        lut[0] = y1[0];
+        lut[N - 1] = y0[data.length - 1];
 
         return lut;
-      },
-
-      isValidIndex: function(index) {
-        return (index >= 0) && (index < colormap.colors.length);
-      }
     }
-  }
 
-  cornerstone.colors.getColormap = getColormap;
-  cornerstone.colors.getColormapsList = getColormapsList;
-  
+    // Colormap based on lookup tables using linear segments.
+    // 
+    // The lookup table is generated using linear interpolation for each
+    // primary color, with the 0-1 domain divided into any number of
+    // segments.
+    //
+    // https://github.com/stefanv/matplotlib/blob/3f1a23755e86fef97d51e30e106195f34425c9e3/lib/matplotlib/colors.py#L663
+    function createLinearSegmentedColormap(segmentedData, N, gamma) {
+        var i;
+        var lut = [];
+
+        N = N == null ? 256 : N;
+        gamma = gamma == null ? 1 : gamma;
+
+        var redLut = makeMappingArray(N, segmentedData.red, gamma);
+        var greenLut = makeMappingArray(N, segmentedData.green, gamma);
+        var blueLut = makeMappingArray(N, segmentedData.blue, gamma);
+
+        for (i = 0; i < N; i++) {
+            var red = Math.round(redLut[i] * 255);
+            var green = Math.round(greenLut[i] * 255);
+            var blue = Math.round(blueLut[i] * 255);
+            var rgba = [red, green, blue, 255];
+
+            lut.push(rgba);
+        }
+
+        return lut;
+    }
+
+    /*
+     * Return all colormaps (id and name) available
+     */
+    function getColormapsList() {
+        var colormaps = [];
+        var keys = Object.keys(colormapsData);
+
+        keys.forEach(function (key) {
+            if (colormapsData.hasOwnProperty(key)) {
+                var colormap = colormapsData[key];
+
+                colormaps.push({
+                    id: key,
+                    name: colormap.name
+                });
+            }
+        });
+
+        return colormaps;
+    }
+
+    function getColormap(id, colormapData) {
+        var colormap = colormapsData[id];
+
+        if (!colormap) {
+            colormap = colormapsData[id] = colormapData || {
+                name: '',
+                colors: []
+            }
+        }
+
+        if (!colormap.colors && colormap.segmentedData) {
+            colormap.colors = createLinearSegmentedColormap(colormap.segmentedData, colormap.numColors, colormap.gamma);
+        }
+
+        return {
+            getColorSchemeName: function (index) {
+                return colormap.name;
+            },
+
+            setColorSchemeName: function (name) {
+                colormap.name = name;
+            },
+
+            getNumberOfColors: function () {
+                return colormap.colors.length;
+            },
+
+            setNumberOfColors: function (numColors) {
+                while (colormap.colors.length < numColors) {
+                    colormap.colors.push(COLOR_BLACK);
+                }
+
+                colormap.colors.length = numColors;
+            },
+
+            getColor: function (index) {
+                if (this.isValidIndex(index)) {
+                    return colormap.colors[index];
+                }
+
+                return COLOR_BLACK;
+            },
+
+            getColorRepeating: function (index) {
+                var numColors = colormap.colors.length;
+                index = numColors ? index % numColors : 0;
+
+                return this.getColor(index);
+            },
+
+            setColor: function (index, rgba) {
+                if (this.isValidIndex(index)) {
+                    colormap.colors[index] = rgba;
+                }
+            },
+
+            addColor: function (rgba) {
+                colormap.colors.push(rgba);
+            },
+
+            insertColor: function (index, rgba) {
+                if (this.isValidIndex(index)) {
+                    colormap.colors.splice(index, 0, rgba);
+                }
+            },
+
+            removeColor: function (index) {
+                if (this.isValidIndex(index)) {
+                    colormap.colors.splice(index, 1);
+                }
+            },
+
+            clearColors: function () {
+                colormap.colors = [];
+            },
+
+            buildLookupTable: function (lut) {
+                if (!lut) {
+                    return;
+                }
+
+                var i;
+                var numColors = colormap.colors.length;
+
+                lut.setNumberOfTableValues(numColors);
+
+                for (i = 0; i < numColors; i++) {
+                    lut.setTableValue(i, colormap.colors[i]);
+                }
+            },
+
+            createLookupTable: function () {
+                var lut = new cornerstone.colors.LookupTable();
+                this.buildLookupTable(lut);
+
+                return lut;
+            },
+
+            isValidIndex: function (index) {
+                return (index >= 0) && (index < colormap.colors.length);
+            }
+        }
+    }
+
+    cornerstone.colors.getColormap = getColormap;
+    cornerstone.colors.getColormapsList = getColormapsList;
+
 }(cornerstone));
-(function(cornerstone) {
+(function (cornerstone) {
 
     "use strict";
 
@@ -562,15 +815,15 @@ if(typeof cornerstone === 'undefined'){
         this.Table = [];
 
 
-        this.setNumberOfTableValues = function(number) {
+        this.setNumberOfTableValues = function (number) {
             this.NumberOfColors = number;
         };
 
-        this.setRamp = function(ramp) {
+        this.setRamp = function (ramp) {
             this.Ramp = ramp;
         };
 
-        this.setTableRange = function(start, end) {
+        this.setTableRange = function (start, end) {
             // Set/Get the minimum/maximum scalar values for scalar mapping.
             // Scalar values less than minimum range value are clamped to minimum range value.
             // Scalar values greater than maximum range value are clamped to maximum range value.
@@ -578,47 +831,47 @@ if(typeof cornerstone === 'undefined'){
             this.TableRange[1] = end;
         };
 
-        this.setHueRange = function(start, end) {
+        this.setHueRange = function (start, end) {
             // Set the range in hue (using automatic generation). Hue ranges between [0,1].
             this.HueRange[0] = start;
             this.HueRange[1] = end;
         };
 
-        this.setSaturationRange = function(start, end) {
+        this.setSaturationRange = function (start, end) {
             // Set the range in saturation (using automatic generation). Saturation ranges between [0,1].
             this.SaturationRange[0] = start;
             this.SaturationRange[1] = end;
         };
 
-        this.setValueRange = function(start, end) {
+        this.setValueRange = function (start, end) {
             // Set the range in value (using automatic generation). Value ranges between [0,1].
             this.ValueRange[0] = start;
             this.ValueRange[1] = end;
         };
 
-        this.setRange = function(start, end) {
+        this.setRange = function (start, end) {
             this.InputRange[0] = start;
             this.InputRange[1] = end;
         };
 
-        this.setAlphaRange = function(start, end) {
+        this.setAlphaRange = function (start, end) {
             // Set the range in alpha (using automatic generation). Alpha ranges from [0,1].
             this.AlphaRange[0] = start;
             this.AlphaRange[1] = end;
         };
 
-        this.getColor = function(scalar) {
+        this.getColor = function (scalar) {
             // Map one value through the lookup table and return the color as an
             // RGB array of doubles between 0 and 1.
-            
+
             return this.mapValue(scalar);
         };
 
-        this.getOpacity = function() {
+        this.getOpacity = function () {
             return opacity;
         };
 
-        this.HSVToRGB = function(hue, sat, val) {
+        this.HSVToRGB = function (hue, sat, val) {
             if (hue > 1) {
                 throw "HSVToRGB expects hue < 1";
             }
@@ -637,7 +890,7 @@ if(typeof cornerstone === 'undefined'){
             var lx = val * (1 - sat);
             var ly = val * (1 - sat * frac);
             var lz = val * (1 - sat * (1 - frac));
-            
+
             switch (hueCase) {
                 /* 0<hue<1/6 */
                 case 0:
@@ -681,8 +934,8 @@ if(typeof cornerstone === 'undefined'){
             return rgb;
         };
 
-        this.build = function(force) {
-            if((this.Table.length > 1) && !force) {
+        this.build = function (force) {
+            if ((this.Table.length > 1) && !force) {
                 return;
             }
 
@@ -700,7 +953,7 @@ if(typeof cornerstone === 'undefined'){
             } else {
                 hinc = sinc = vinc = ainc = 0.0;
             }
-            
+
             for (var i = 0; i <= maxIndex; i++) {
                 var hue = this.HueRange[0] + i * hinc;
                 var sat = this.SaturationRange[0] + i * sinc;
@@ -710,7 +963,7 @@ if(typeof cornerstone === 'undefined'){
                 var rgb = this.HSVToRGB(hue, sat, val);
                 var c_rgba = [];
 
-                switch(this.Ramp) {
+                switch (this.Ramp) {
                     case 'scurve':
                         c_rgba[0] = Math.floor(127.5 * (1.0 + Math.cos((1.0 - rgb[0]) * Math.PI)));
                         c_rgba[1] = Math.floor(127.5 * (1.0 + Math.cos((1.0 - rgb[1]) * Math.PI)));
@@ -739,7 +992,7 @@ if(typeof cornerstone === 'undefined'){
             this.buildSpecialColors();
         };
 
-        this.buildSpecialColors = function() {
+        this.buildSpecialColors = function () {
             var numberOfColors = this.NumberOfColors;
             var belowRangeColorIndex = numberOfColors + BELOW_RANGE_COLOR_INDEX;
             var aboveRangeColorIndex = numberOfColors + ABOVE_RANGE_COLOR_INDEX;
@@ -766,7 +1019,7 @@ if(typeof cornerstone === 'undefined'){
         };
 
         // Given a scalar value v, return an rgba color value from lookup table.
-        this.mapValue = function(v) {
+        this.mapValue = function (v) {
             var index = this.getIndex(v);
             if (index < 0) {
                 return this.NaNColor;
@@ -783,7 +1036,7 @@ if(typeof cornerstone === 'undefined'){
             return this.Table[index];
         };
 
-        this.linearIndexLookupMain = function(v, p) {
+        this.linearIndexLookupMain = function (v, p) {
             var dIndex;
 
             // NOTE: Added Math.floor since values were not integers? Check VTK source
@@ -798,7 +1051,7 @@ if(typeof cornerstone === 'undefined'){
             return Math.round(dIndex);
         };
 
-        this.getIndex = function(v) {
+        this.getIndex = function (v) {
             var p = {};
             p.Range = [];
             p.MaxIndex = this.NumberOfColors - 1;
@@ -834,9 +1087,9 @@ if(typeof cornerstone === 'undefined'){
             return index;
         };
 
-        this.setTableValue = function(index, rgba) {
+        this.setTableValue = function (index, rgba) {
             // Check if it index, red, green, blue and alpha were passed as parameter
-            if(arguments.length === 5) {
+            if (arguments.length === 5) {
                 rgba = Array.prototype.slice.call(arguments, 1);
             }
 
@@ -872,19 +1125,19 @@ if(typeof cornerstone === 'undefined'){
     "use strict";
 
     function disable(element) {
-        if(element === undefined) {
+        if (element === undefined) {
             throw "disable: element element must not be undefined";
         }
 
         // Search for this element in this list of enabled elements
         var enabledElements = cornerstone.getEnabledElements();
-        for(var i=0; i < enabledElements.length; i++) {
-            if(enabledElements[i].element === element) {
+        for (var i = 0; i < enabledElements.length; i++) {
+            if (enabledElements[i].element === element) {
                 // We found it!
 
                 // Fire an event so dependencies can cleanup
                 var eventData = {
-                    element : element
+                    element: element
                 };
                 $(element).trigger("CornerstoneElementDisabled", eventData);
 
@@ -916,10 +1169,10 @@ if(typeof cornerstone === 'undefined'){
      * @param image
      */
     function displayImage(element, image, viewport) {
-        if(element === undefined) {
+        if (element === undefined) {
             throw "displayImage: parameter element cannot be undefined";
         }
-        if(image === undefined) {
+        if (image === undefined) {
             throw "displayImage: parameter image cannot be undefined";
         }
 
@@ -927,15 +1180,14 @@ if(typeof cornerstone === 'undefined'){
 
         enabledElement.image = image;
 
-        if(enabledElement.viewport === undefined) {
+        if (enabledElement.viewport === undefined) {
             enabledElement.viewport = cornerstone.internal.getDefaultViewport(enabledElement.canvas, image);
         }
 
         // merge viewport
-        if(viewport) {
-            for(var attrname in viewport)
-            {
-                if(viewport[attrname] !== null) {
+        if (viewport) {
+            for (var attrname in viewport) {
+                if (viewport[attrname] !== null) {
                     enabledElement.viewport[attrname] = viewport[attrname];
                 }
             }
@@ -943,19 +1195,18 @@ if(typeof cornerstone === 'undefined'){
 
         var now = new Date();
         var frameRate;
-        if(enabledElement.lastImageTimeStamp !== undefined) {
+        if (enabledElement.lastImageTimeStamp !== undefined) {
             var timeSinceLastImage = now.getTime() - enabledElement.lastImageTimeStamp;
             frameRate = (1000 / timeSinceLastImage).toFixed();
-        } else {
-        }
+        } else {}
         enabledElement.lastImageTimeStamp = now.getTime();
 
         var newImageEventData = {
-            viewport : enabledElement.viewport,
-            element : enabledElement.element,
-            image : enabledElement.image,
-            enabledElement : enabledElement,
-            frameRate : frameRate
+            viewport: enabledElement.viewport,
+            element: enabledElement.element,
+            image: enabledElement.image,
+            enabledElement: enabledElement,
+            frameRate: frameRate
         };
 
         $(enabledElement.element).trigger("CornerstoneNewImage", newImageEventData);
@@ -982,7 +1233,7 @@ if(typeof cornerstone === 'undefined'){
     function draw(element) {
         var enabledElement = cornerstone.getEnabledElement(element);
 
-        if(enabledElement.image === undefined) {
+        if (enabledElement.image === undefined) {
             throw "draw: image has not been loaded yet";
         }
 
@@ -1004,12 +1255,11 @@ if(typeof cornerstone === 'undefined'){
     /**
      * Draws all invalidated enabled elements and clears the invalid flag after drawing it
      */
-    function drawInvalidated()
-    {
+    function drawInvalidated() {
         var enabledElements = cornerstone.getEnabledElements();
-        for(var i=0;i < enabledElements.length; i++) {
+        for (var i = 0; i < enabledElements.length; i++) {
             var ee = enabledElements[i];
-            if(ee.invalid === true) {
+            if (ee.invalid === true) {
                 cornerstone.drawImage(ee, true);
             }
         }
@@ -1027,7 +1277,7 @@ if(typeof cornerstone === 'undefined'){
     "use strict";
 
     function enable(element, options) {
-        if(element === undefined) {
+        if (element === undefined) {
             throw "enable: parameter element cannot be undefined";
         }
 
@@ -1038,7 +1288,7 @@ if(typeof cornerstone === 'undefined'){
                 // If WebGL is available on the device, initialize the renderer
                 // and return the renderCanvas from the WebGL rendering path
                 console.log('Using WebGL rendering path');
-                
+
                 cornerstone.webGL.renderer.initRenderer();
                 options.renderer = 'webgl';
             } else {
@@ -1055,11 +1305,11 @@ if(typeof cornerstone === 'undefined'){
         var el = {
             element: element,
             canvas: canvas,
-            image : undefined, // will be set once image is loaded
+            image: undefined, // will be set once image is loaded
             invalid: false, // true if image needs to be drawn, false if not
-            needsRedraw:true,
+            needsRedraw: true,
             options: options,
-            data : {}
+            data: {}
         };
         cornerstone.addEnabledElement(el);
 
@@ -1067,12 +1317,12 @@ if(typeof cornerstone === 'undefined'){
 
 
         function draw() {
-            if (el.canvas === undefined){
+            if (el.canvas === undefined) {
                 return;
             }
-            if (el.needsRedraw && el.image !== undefined){
+            if (el.needsRedraw && el.image !== undefined) {
                 var start = new Date();
-                el.image.render(el, el.invalid);
+                cornerstone.renderImage(el, el.invalid);     
 
                 var context = el.canvas.getContext('2d');
 
@@ -1111,8 +1361,7 @@ if(typeof cornerstone === 'undefined'){
 
     function getElementData(el, dataType) {
         var ee = cornerstone.getEnabledElement(el);
-        if(ee.data.hasOwnProperty(dataType) === false)
-        {
+        if (ee.data.hasOwnProperty(dataType) === false) {
             ee.data[dataType] = {};
         }
         return ee.data[dataType];
@@ -1135,11 +1384,11 @@ if(typeof cornerstone === 'undefined'){
     var enabledElements = [];
 
     function getEnabledElement(element) {
-        if(element === undefined) {
+        if (element === undefined) {
             throw "getEnabledElement: parameter element must not be undefined";
         }
-        for(var i=0; i < enabledElements.length; i++) {
-            if(enabledElements[i].element == element) {
+        for (var i = 0; i < enabledElements.length; i++) {
+            if (enabledElements[i].element == element) {
                 return enabledElements[i];
             }
         }
@@ -1148,7 +1397,7 @@ if(typeof cornerstone === 'undefined'){
     }
 
     function addEnabledElement(enabledElement) {
-        if(enabledElement === undefined) {
+        if (enabledElement === undefined) {
             throw "getEnabledElement: enabledElement element must not be undefined";
         }
 
@@ -1157,8 +1406,8 @@ if(typeof cornerstone === 'undefined'){
 
     function getEnabledElementsByImageId(imageId) {
         var ees = [];
-        enabledElements.forEach(function(enabledElement) {
-            if(enabledElement.image && enabledElement.image.imageId === imageId) {
+        enabledElements.forEach(function (enabledElement) {
+            if (enabledElement.image && enabledElement.image.imageId === imageId) {
                 ees.push(enabledElement);
             }
         });
@@ -1184,36 +1433,33 @@ if(typeof cornerstone === 'undefined'){
     "use strict";
 
     function getImageSize(enabledElement) {
-      if(enabledElement.viewport.rotation === 0 ||enabledElement.viewport.rotation === 180) {
-        return {
-          width: enabledElement.image.width,
-          height: enabledElement.image.height
-        };
-      } else {
-        return {
-          width: enabledElement.image.height,
-          height: enabledElement.image.width
-        };
-      }
+        if (enabledElement.viewport.rotation === 0 || enabledElement.viewport.rotation === 180) {
+            return {
+                width: enabledElement.image.width,
+                height: enabledElement.image.height
+            };
+        } else {
+            return {
+                width: enabledElement.image.height,
+                height: enabledElement.image.width
+            };
+        }
     }
 
     /**
      * Adjusts an images scale and center so the image is centered and completely visible
      * @param element
      */
-    function fitToWindow(element)
-    {
+    function fitToWindow(element) {
         var enabledElement = cornerstone.getEnabledElement(element);
         var imageSize = getImageSize(enabledElement);
 
         var verticalScale = enabledElement.canvas.height / imageSize.height;
-        var horizontalScale= enabledElement.canvas.width / imageSize.width;
-        if(horizontalScale < verticalScale) {
-          enabledElement.viewport.scale = horizontalScale;
-        }
-        else
-        {
-          enabledElement.viewport.scale = verticalScale;
+        var horizontalScale = enabledElement.canvas.width / imageSize.width;
+        if (horizontalScale < verticalScale) {
+            enabledElement.viewport.scale = horizontalScale;
+        } else {
+            enabledElement.viewport.scale = verticalScale;
         }
         enabledElement.viewport.translation.x = 0;
         enabledElement.viewport.translation.y = 0;
@@ -1311,7 +1557,7 @@ if(typeof cornerstone === 'undefined'){
      * @returns {Array}
      */
     function getStoredPixels(element, x, y, width, height) {
-        if(element === undefined) {
+        if (element === undefined) {
             throw "getStoredPixels: parameter element must not be undefined";
         }
 
@@ -1321,8 +1567,8 @@ if(typeof cornerstone === 'undefined'){
         var storedPixels = [];
         var index = 0;
         var pixelData = ee.image.getPixelData();
-        for(var row=0; row < height; row++) {
-            for(var column=0; column < width; column++) {
+        for (var row = 0; row < height; row++) {
+            for (var column = 0; column < width; column++) {
                 var spIndex = ((row + y) * ee.image.columns) + (column + x);
                 storedPixels[index++] = pixelData[spIndex];
             }
@@ -1349,22 +1595,22 @@ if(typeof cornerstone === 'undefined'){
         var enabledElement = cornerstone.getEnabledElement(element);
 
         var viewport = enabledElement.viewport;
-        if(viewport === undefined) {
+        if (viewport === undefined) {
             return undefined;
         }
         return {
-            scale : viewport.scale,
-            translation : {
-                x : viewport.translation.x,
-                y : viewport.translation.y
+            scale: viewport.scale,
+            translation: {
+                x: viewport.translation.x,
+                y: viewport.translation.y
             },
-            voi : {
+            voi: {
                 windowWidth: viewport.voi.windowWidth,
-                windowCenter : viewport.voi.windowCenter
+                windowCenter: viewport.voi.windowCenter
             },
-            invert : viewport.invert,
+            invert: viewport.invert,
             pixelReplication: viewport.pixelReplication,
-            rotation: viewport.rotation, 
+            rotation: viewport.rotation,
             hflip: viewport.hflip,
             vflip: viewport.vflip,
             modalityLUT: viewport.modalityLUT,
@@ -1413,7 +1659,7 @@ if(typeof cornerstone === 'undefined'){
 
         // cache size has been exceeded, create list of images sorted by timeStamp
         // so we can purge the least recently used image
-        function compare(a,b) {
+        function compare(a, b) {
             if (a.timeStamp > b.timeStamp) {
                 return -1;
             }
@@ -1425,13 +1671,15 @@ if(typeof cornerstone === 'undefined'){
         cachedImages.sort(compare);
 
         // remove images as necessary
-        while(cacheSizeInBytes > maximumSizeInBytes) {
+        while (cacheSizeInBytes > maximumSizeInBytes) {
             var lastCachedImage = cachedImages[cachedImages.length - 1];
             var imageId = lastCachedImage.imageId;
 
             removeImagePromise(imageId);
 
-            $(cornerstone).trigger('CornerstoneImageCachePromiseRemoved', {imageId: imageId});
+            $(cornerstone).trigger('CornerstoneImageCachePromiseRemoved', {
+                imageId: imageId
+            });
         }
 
         var cacheInfo = cornerstone.imageCache.getCacheInfo();
@@ -1451,18 +1699,18 @@ if(typeof cornerstone === 'undefined'){
         }
 
         var cachedImage = {
-            loaded : false,
-            imageId : imageId,
+            loaded: false,
+            imageId: imageId,
             sharedCacheKey: undefined, // the sharedCacheKey for this imageId.  undefined by default
-            imagePromise : imagePromise,
-            timeStamp : new Date(),
+            imagePromise: imagePromise,
+            timeStamp: new Date(),
             sizeInBytes: 0
         };
 
         imageCache[imageId] = cachedImage;
         cachedImages.push(cachedImage);
 
-        imagePromise.then(function(image) {
+        imagePromise.then(function (image) {
             cachedImage.loaded = true;
             cachedImage.image = image;
 
@@ -1505,7 +1753,7 @@ if(typeof cornerstone === 'undefined'){
         }
 
         cachedImage.imagePromise.reject();
-        cachedImages.splice( cachedImages.indexOf(cachedImage), 1);
+        cachedImages.splice(cachedImages.indexOf(cachedImage), 1);
         cacheSizeInBytes -= cachedImage.sizeInBytes;
         decache(cachedImage.imagePromise, cachedImage.imageId);
 
@@ -1516,8 +1764,8 @@ if(typeof cornerstone === 'undefined'){
 
     function getCacheInfo() {
         return {
-            maximumSizeInBytes : maximumSizeInBytes,
-            cacheSizeInBytes : cacheSizeInBytes,
+            maximumSizeInBytes: maximumSizeInBytes,
+            cacheSizeInBytes: cacheSizeInBytes,
             numberOfImagesCached: cachedImages.length
         };
     }
@@ -1525,11 +1773,11 @@ if(typeof cornerstone === 'undefined'){
     // This method should only be called by `removeImagePromise` because it's
     // the one that knows how to deal with shared cache keys and cache size.
     function decache(imagePromise, imageId) {
-        imagePromise.then(function(image) {
-            if(image.decache) {
+        imagePromise.then(function (image) {
+            if (image.decache) {
                 image.decache();
             }
-        }).always(function() {
+        }).always(function () {
             delete imageCache[imageId];
         });
     }
@@ -1542,23 +1790,23 @@ if(typeof cornerstone === 'undefined'){
     }
 
     function changeImageIdCacheSize(imageId, newCacheSize) {
-      var cacheEntry = imageCache[imageId];
-      if(cacheEntry) {
-        cacheEntry.imagePromise.then(function(image) {
-          var cacheSizeDifference = newCacheSize - image.sizeInBytes;
-          image.sizeInBytes = newCacheSize;
-          cacheSizeInBytes += cacheSizeDifference;
-        });
-      }
+        var cacheEntry = imageCache[imageId];
+        if (cacheEntry) {
+            cacheEntry.imagePromise.then(function (image) {
+                var cacheSizeDifference = newCacheSize - image.sizeInBytes;
+                image.sizeInBytes = newCacheSize;
+                cacheSizeInBytes += cacheSizeDifference;
+            });
+        }
     }
 
     // module exports
     cornerstone.imageCache = {
-        putImagePromise : putImagePromise,
+        putImagePromise: putImagePromise,
         getImagePromise: getImagePromise,
         removeImagePromise: removeImagePromise,
         setMaximumSizeBytes: setMaximumSizeBytes,
-        getCacheInfo : getCacheInfo,
+        getCacheInfo: getCacheInfo,
         purgeCache: purgeCache,
         cachedImages: cachedImages,
         imageCache: imageCache,
@@ -1584,12 +1832,11 @@ if(typeof cornerstone === 'undefined'){
         var scheme = imageId.substring(0, colonIndex);
         var loader = imageLoaders[scheme];
         var imagePromise;
-        if(loader === undefined || loader === null) {
-            if(unknownImageLoader !== undefined) {
+        if (loader === undefined || loader === null) {
+            if (unknownImageLoader !== undefined) {
                 imagePromise = unknownImageLoader(imageId);
                 return imagePromise;
-            }
-            else {
+            } else {
                 return undefined;
             }
         }
@@ -1597,8 +1844,10 @@ if(typeof cornerstone === 'undefined'){
 
         // broadcast an image loaded event once the image is loaded
         // This is based on the idea here: http://stackoverflow.com/questions/3279809/global-custom-events-in-jquery
-        imagePromise.then(function(image) {
-            $(cornerstone).trigger('CornerstoneImageLoaded', {image: image});
+        imagePromise.then(function (image) {
+            $(cornerstone).trigger('CornerstoneImageLoaded', {
+                image: image
+            });
         });
 
         return imagePromise;
@@ -1608,17 +1857,17 @@ if(typeof cornerstone === 'undefined'){
     // to the loaded image object or fail if an error occurred.  The loaded image
     // is not stored in the cache
     function loadImage(imageId, options) {
-        if(imageId === undefined) {
+        if (imageId === undefined) {
             throw "loadImage: parameter imageId must not be undefined";
         }
 
         var imagePromise = cornerstone.imageCache.getImagePromise(imageId);
-        if(imagePromise !== undefined) {
+        if (imagePromise !== undefined) {
             return imagePromise;
         }
 
         imagePromise = loadImageFromImageLoader(imageId, options);
-        if(imagePromise === undefined) {
+        if (imagePromise === undefined) {
             throw "loadImage: no image loader for imageId";
         }
 
@@ -1629,17 +1878,17 @@ if(typeof cornerstone === 'undefined'){
     // to the loaded image object or fail if an error occurred.  The image is
     // stored in the cache
     function loadAndCacheImage(imageId, options) {
-        if(imageId === undefined) {
+        if (imageId === undefined) {
             throw "loadAndCacheImage: parameter imageId must not be undefined";
         }
 
         var imagePromise = cornerstone.imageCache.getImagePromise(imageId);
-        if(imagePromise !== undefined) {
+        if (imagePromise !== undefined) {
             return imagePromise;
         }
 
         imagePromise = loadImageFromImageLoader(imageId, options);
-        if(imagePromise === undefined) {
+        if (imagePromise === undefined) {
             throw "loadAndCacheImage: no image loader for imageId";
         }
 
@@ -1677,54 +1926,53 @@ if(typeof cornerstone === 'undefined'){
     function calculateTransform(enabledElement, scale) {
 
         var transform = new cornerstone.internal.Transform();
-        transform.translate(enabledElement.canvas.width/2, enabledElement.canvas.height / 2);
+        transform.translate(enabledElement.canvas.width / 2, enabledElement.canvas.height / 2);
 
         //Apply the rotation before scaling for non square pixels
         var angle = enabledElement.viewport.rotation;
-        if(angle!==0) {
-            transform.rotate(angle*Math.PI/180);
+        if (angle !== 0) {
+            transform.rotate(angle * Math.PI / 180);
         }
 
         // apply the scale
         var widthScale = enabledElement.viewport.scale;
         var heightScale = enabledElement.viewport.scale;
-        if(enabledElement.image.rowPixelSpacing < enabledElement.image.columnPixelSpacing) {
+        if (enabledElement.image.rowPixelSpacing < enabledElement.image.columnPixelSpacing) {
             widthScale = widthScale * (enabledElement.image.columnPixelSpacing / enabledElement.image.rowPixelSpacing);
-        }
-        else if(enabledElement.image.columnPixelSpacing < enabledElement.image.rowPixelSpacing) {
+        } else if (enabledElement.image.columnPixelSpacing < enabledElement.image.rowPixelSpacing) {
             heightScale = heightScale * (enabledElement.image.rowPixelSpacing / enabledElement.image.columnPixelSpacing);
         }
         transform.scale(widthScale, heightScale);
 
         // unrotate to so we can translate unrotated
-        if(angle!==0) {
-            transform.rotate(-angle*Math.PI/180);
+        if (angle !== 0) {
+            transform.rotate(-angle * Math.PI / 180);
         }
 
         // apply the pan offset
         transform.translate(enabledElement.viewport.translation.x, enabledElement.viewport.translation.y);
 
         // rotate again so we can apply general scale
-        if(angle!==0) {
-            transform.rotate(angle*Math.PI/180);
+        if (angle !== 0) {
+            transform.rotate(angle * Math.PI / 180);
         }
 
-        if(scale !== undefined) {
+        if (scale !== undefined) {
             // apply the font scale
             transform.scale(scale, scale);
         }
 
         //Apply Flip if required
-        if(enabledElement.viewport.hflip) {
-            transform.scale(-1,1);
+        if (enabledElement.viewport.hflip) {
+            transform.scale(-1, 1);
         }
 
-        if(enabledElement.viewport.vflip) {
-            transform.scale(1,-1);
+        if (enabledElement.viewport.vflip) {
+            transform.scale(1, -1);
         }
 
         // translate the origin back to the corner of the image so the event handlers can draw in image coordinate system
-        transform.translate(-enabledElement.image.width / 2 , -enabledElement.image.height/ 2);
+        transform.translate(-enabledElement.image.width / 2, -enabledElement.image.height / 2);
         return transform;
     }
 
@@ -1740,9 +1988,9 @@ if(typeof cornerstone === 'undefined'){
     "use strict";
 
     function stringToFloatArray(array) {
-        return array.split('\\').map(function(value) {
-                return parseFloat(value);
-            });
+        return array.split('\\').map(function (value) {
+            return parseFloat(value);
+        });
     }
 
     function getDrawImageOffset(targetImageId, referenceImageId) {
@@ -1796,7 +2044,7 @@ if(typeof cornerstone === 'undefined'){
         enabledElement.image = baseLayer.image;
 
         // Make an array of only the visible layers to save time
-        var visibleLayers = enabledElement.layers.filter(function(layer) {
+        var visibleLayers = enabledElement.layers.filter(function (layer) {
             if (layer.options && layer.options.visible !== false && layer.options.opacity !== 0) {
                 return true;
             }
@@ -1806,7 +2054,7 @@ if(typeof cornerstone === 'undefined'){
         // loop through the layers 
         if (enabledElement.syncViewports === true) {
             viewportRatio[baseLayer.layerId] = 1;
-            visibleLayers.forEach(function(layer, index) {
+            visibleLayers.forEach(function (layer, index) {
                 // Don't do anything to the base layer
                 if (index === 0) {
                     return;
@@ -1816,7 +2064,7 @@ if(typeof cornerstone === 'undefined'){
                 // parameters
                 if (!layer.viewport) {
                     layer.viewport = cornerstone.internal.getDefaultViewport(enabledElement.canvas, layer.image);
-                    viewportRatio[layer.layerId] = layer.viewport.scale / baseLayer.viewport.scale;   
+                    viewportRatio[layer.layerId] = layer.viewport.scale / baseLayer.viewport.scale;
                 }
 
                 // Update the layer's translation and scale to keep them in sync with the first image
@@ -1827,7 +2075,7 @@ if(typeof cornerstone === 'undefined'){
                     x: baseLayer.viewport.translation.x * layer.image.width / baseLayer.image.width,
                     y: baseLayer.viewport.translation.y * layer.image.height / baseLayer.image.height
                 };
-            });    
+            });
         }
 
         // Get the enabled element's canvas so we can draw to it
@@ -1839,7 +2087,7 @@ if(typeof cornerstone === 'undefined'){
         context.fillRect(0, 0, enabledElement.canvas.width, enabledElement.canvas.height);
 
         // Loop through each layer and draw it to the canvas
-        visibleLayers.forEach(function(layer, index) {
+        visibleLayers.forEach(function (layer, index) {
             context.save();
 
             // Set the layer's canvas to the pixel coordinate system
@@ -1850,16 +2098,16 @@ if(typeof cornerstone === 'undefined'){
             if (layer.image.color === true) {
                 cornerstone.addColorLayer(layer, invalidated);
             } else {
-                cornerstone.addGrayscaleLayer(layer, invalidated);    
+                cornerstone.addGrayscaleLayer(layer, invalidated);
             }
 
             // Apply any global opacity settings that have been defined for this layer
             if (layer.options && layer.options.opacity) {
                 context.globalAlpha = layer.options.opacity;
             } else {
-                context.globalAlpha = 1;    
+                context.globalAlpha = 1;
             }
-            
+
             // Calculate any offset between the position of the base layer and the current layer
             var offset = getDrawImageOffset(layer.image.imageId, baseLayer.image.imageId);
 
@@ -1901,7 +2149,7 @@ if(typeof cornerstone === 'undefined'){
      */
     function drawImage(enabledElement, invalidated) {
         enabledElement.needsRedraw = true;
-        if (invalidated){
+        if (invalidated) {
             enabledElement.invalid = true;
         }
 
@@ -1918,110 +2166,104 @@ if(typeof cornerstone === 'undefined'){
 
 (function (cornerstone) {
 
-  "use strict";
+    "use strict";
 
-  function generateLutNew(image, windowWidth, windowCenter, invert, modalityLUT, voiLUT)
-  {
-    if(image.lut === undefined) {
-      image.lut =  new Int16Array(image.maxPixelValue - Math.min(image.minPixelValue,0)+1);
-    }
-    var lut = image.lut;
-    var maxPixelValue = image.maxPixelValue;
-    var minPixelValue = image.minPixelValue;
+    function generateLutNew(image, windowWidth, windowCenter, invert, modalityLUT, voiLUT) {
+        if (image.lut === undefined) {
+            image.lut = new Int16Array(image.maxPixelValue - Math.min(image.minPixelValue, 0) + 1);
+        }
+        var lut = image.lut;
+        var maxPixelValue = image.maxPixelValue;
+        var minPixelValue = image.minPixelValue;
 
-    var mlutfn = cornerstone.internal.getModalityLUT(image.slope, image.intercept, modalityLUT);
-    var vlutfn = cornerstone.internal.getVOILUT(windowWidth, windowCenter, voiLUT);
+        var mlutfn = cornerstone.internal.getModalityLUT(image.slope, image.intercept, modalityLUT);
+        var vlutfn = cornerstone.internal.getVOILUT(windowWidth, windowCenter, voiLUT);
 
-    var offset = 0;
-    if(minPixelValue < 0) {
-      offset = minPixelValue;
-    }
-    var storedValue;
-    var modalityLutValue;
-    var voiLutValue;
-    var clampedValue;
+        var offset = 0;
+        if (minPixelValue < 0) {
+            offset = minPixelValue;
+        }
+        var storedValue;
+        var modalityLutValue;
+        var voiLutValue;
+        var clampedValue;
 
-    for(storedValue = image.minPixelValue; storedValue <= maxPixelValue; storedValue++)
-    {
-      modalityLutValue = mlutfn(storedValue);
-      voiLutValue = vlutfn(modalityLutValue);
-      clampedValue = Math.min(Math.max(voiLutValue, 0), 255);
-      if(!invert) {
-        lut[storedValue+ (-offset)] = Math.round(clampedValue);
-      } else {
-        lut[storedValue + (-offset)] = Math.round(255 - clampedValue);
-      }
-    }
-    return lut;
-  }
-
-
-
-  /**
-   * Creates a LUT used while rendering to convert stored pixel values to
-   * display pixels
-   *
-   * @param image
-   * @returns {Array}
-   */
-  function generateLut(image, windowWidth, windowCenter, invert, modalityLUT, voiLUT)
-  {
-    if(modalityLUT || voiLUT) {
-      return generateLutNew(image, windowWidth, windowCenter, invert, modalityLUT, voiLUT);
+        for (storedValue = image.minPixelValue; storedValue <= maxPixelValue; storedValue++) {
+            modalityLutValue = mlutfn(storedValue);
+            voiLutValue = vlutfn(modalityLutValue);
+            clampedValue = Math.min(Math.max(voiLutValue, 0), 255);
+            if (!invert) {
+                lut[storedValue + (-offset)] = Math.round(clampedValue);
+            } else {
+                lut[storedValue + (-offset)] = Math.round(255 - clampedValue);
+            }
+        }
+        return lut;
     }
 
-    if(image.lut === undefined) {
-      image.lut =  new Int16Array(image.maxPixelValue - Math.min(image.minPixelValue,0)+1);
+
+
+    /**
+     * Creates a LUT used while rendering to convert stored pixel values to
+     * display pixels
+     *
+     * @param image
+     * @returns {Array}
+     */
+    function generateLut(image, windowWidth, windowCenter, invert, modalityLUT, voiLUT) {
+        if (modalityLUT || voiLUT) {
+            return generateLutNew(image, windowWidth, windowCenter, invert, modalityLUT, voiLUT);
+        }
+
+        if (image.lut === undefined) {
+            image.lut = new Int16Array(image.maxPixelValue - Math.min(image.minPixelValue, 0) + 1);
+        }
+        var lut = image.lut;
+
+        var maxPixelValue = image.maxPixelValue;
+        var minPixelValue = image.minPixelValue;
+        var slope = image.slope;
+        var intercept = image.intercept;
+        var localWindowWidth = windowWidth;
+        var localWindowCenter = windowCenter;
+        var modalityLutValue;
+        var voiLutValue;
+        var clampedValue;
+        var storedValue;
+
+        // NOTE: As of Nov 2014, most javascript engines have lower performance when indexing negative indexes.
+        // We improve performance by offsetting the pixel values for signed data to avoid negative indexes
+        // when generating the lut and then undo it in storedPixelDataToCanvasImagedata.  Thanks to @jpambrun
+        // for this contribution!
+
+        var offset = 0;
+        if (minPixelValue < 0) {
+            offset = minPixelValue;
+        }
+
+        if (invert === true) {
+            for (storedValue = image.minPixelValue; storedValue <= maxPixelValue; storedValue++) {
+                modalityLutValue = storedValue * slope + intercept;
+                voiLutValue = (((modalityLutValue - (localWindowCenter)) / (localWindowWidth) + 0.5) * 255.0);
+                clampedValue = Math.min(Math.max(voiLutValue, 0), 255);
+                lut[storedValue + (-offset)] = Math.round(255 - clampedValue);
+            }
+        } else {
+            for (storedValue = image.minPixelValue; storedValue <= maxPixelValue; storedValue++) {
+                modalityLutValue = storedValue * slope + intercept;
+                voiLutValue = (((modalityLutValue - (localWindowCenter)) / (localWindowWidth) + 0.5) * 255.0);
+                clampedValue = Math.min(Math.max(voiLutValue, 0), 255);
+                lut[storedValue + (-offset)] = Math.round(clampedValue);
+            }
+        }
     }
-    var lut = image.lut;
-
-    var maxPixelValue = image.maxPixelValue;
-    var minPixelValue = image.minPixelValue;
-    var slope = image.slope;
-    var intercept = image.intercept;
-    var localWindowWidth = windowWidth;
-    var localWindowCenter = windowCenter;
-    var modalityLutValue;
-    var voiLutValue;
-    var clampedValue;
-    var storedValue;
-
-    // NOTE: As of Nov 2014, most javascript engines have lower performance when indexing negative indexes.
-    // We improve performance by offsetting the pixel values for signed data to avoid negative indexes
-    // when generating the lut and then undo it in storedPixelDataToCanvasImagedata.  Thanks to @jpambrun
-    // for this contribution!
-
-    var offset = 0;
-    if(minPixelValue < 0) {
-      offset = minPixelValue;
-    }
-
-    if(invert === true) {
-      for(storedValue = image.minPixelValue; storedValue <= maxPixelValue; storedValue++)
-      {
-        modalityLutValue =  storedValue * slope + intercept;
-        voiLutValue = (((modalityLutValue - (localWindowCenter)) / (localWindowWidth) + 0.5) * 255.0);
-        clampedValue = Math.min(Math.max(voiLutValue, 0), 255);
-        lut[storedValue + (-offset)] = Math.round(255 - clampedValue);
-      }
-    }
-    else {
-      for(storedValue = image.minPixelValue; storedValue <= maxPixelValue; storedValue++)
-      {
-        modalityLutValue = storedValue * slope + intercept;
-        voiLutValue = (((modalityLutValue - (localWindowCenter)) / (localWindowWidth) + 0.5) * 255.0);
-        clampedValue = Math.min(Math.max(voiLutValue, 0), 255);
-        lut[storedValue+ (-offset)] = Math.round(clampedValue);
-      }
-    }
-  }
 
 
-  // Module exports
-  cornerstone.internal.generateLutNew = generateLutNew;
-  cornerstone.internal.generateLut = generateLut;
-  cornerstone.generateLutNew = generateLutNew;
-  cornerstone.generateLut = generateLut;
+    // Module exports
+    cornerstone.internal.generateLutNew = generateLutNew;
+    cornerstone.internal.generateLut = generateLut;
+    cornerstone.generateLutNew = generateLutNew;
+    cornerstone.generateLut = generateLut;
 }(cornerstone));
 
 /**
@@ -2040,19 +2282,19 @@ if(typeof cornerstone === 'undefined'){
      * @returns viewport object
      */
     function getDefaultViewport(canvas, image) {
-        if(canvas === undefined) {
+        if (canvas === undefined) {
             throw "getDefaultViewport: parameter canvas must not be undefined";
         }
-        if(image === undefined) {
+        if (image === undefined) {
             throw "getDefaultViewport: parameter image must not be undefined";
         }
         var viewport = {
-            scale : 1.0,
-            translation : {
-                x : 0,
-                y : 0
+            scale: 1.0,
+            translation: {
+                x: 0,
+                y: 0
             },
-            voi : {
+            voi: {
                 windowWidth: image.windowWidth,
                 windowCenter: image.windowCenter,
             },
@@ -2067,11 +2309,10 @@ if(typeof cornerstone === 'undefined'){
 
         // fit image to window
         var verticalScale = canvas.height / image.rows;
-        var horizontalScale= canvas.width / image.columns;
-        if(horizontalScale < verticalScale) {
+        var horizontalScale = canvas.width / image.columns;
+        if (horizontalScale < verticalScale) {
             viewport.scale = horizontalScale;
-        }
-        else {
+        } else {
             viewport.scale = verticalScale;
         }
         return viewport;
@@ -2086,8 +2327,7 @@ if(typeof cornerstone === 'undefined'){
 
     "use strict";
 
-    function getTransform(enabledElement)
-    {
+    function getTransform(enabledElement) {
         // For now we will calculate it every time it is requested.  In the future, we may want to cache
         // it in the enabled element to speed things up
         var transform = cornerstone.internal.calculateTransform(enabledElement);
@@ -2118,43 +2358,39 @@ if(typeof cornerstone === 'undefined'){
 
 (function (cornerstone) {
 
-  "use strict";
+    "use strict";
 
 
-  function generateLinearModalityLUT(slope, intercept) {
-    var localSlope = slope;
-    var localIntercept = intercept;
-    return function(sp) {
-      return sp * localSlope + localIntercept;
+    function generateLinearModalityLUT(slope, intercept) {
+        var localSlope = slope;
+        var localIntercept = intercept;
+        return function (sp) {
+            return sp * localSlope + localIntercept;
+        }
     }
-  }
 
-  function generateNonLinearModalityLUT(modalityLUT) {
-    var minValue = modalityLUT.lut[0];
-    var maxValue = modalityLUT.lut[modalityLUT.lut.length -1];
-    var maxValueMapped = modalityLUT.firstValueMapped + modalityLUT.lut.length;
-    return function(sp) {
-      if(sp < modalityLUT.firstValueMapped) {
-        return minValue;
-      }
-      else if(sp >= maxValueMapped)
-      {
-        return maxValue;
-      }
-      else
-      {
-        return modalityLUT.lut[sp];
-      }
+    function generateNonLinearModalityLUT(modalityLUT) {
+        var minValue = modalityLUT.lut[0];
+        var maxValue = modalityLUT.lut[modalityLUT.lut.length - 1];
+        var maxValueMapped = modalityLUT.firstValueMapped + modalityLUT.lut.length;
+        return function (sp) {
+            if (sp < modalityLUT.firstValueMapped) {
+                return minValue;
+            } else if (sp >= maxValueMapped) {
+                return maxValue;
+            } else {
+                return modalityLUT.lut[sp];
+            }
+        }
     }
-  }
 
-  function getModalityLUT(slope, intercept, modalityLUT) {
-    if (modalityLUT) {
-      return generateNonLinearModalityLUT(modalityLUT);
-    } else {
-      return generateLinearModalityLUT(slope, intercept);
+    function getModalityLUT(slope, intercept, modalityLUT) {
+        if (modalityLUT) {
+            return generateNonLinearModalityLUT(modalityLUT);
+        } else {
+            return generateLinearModalityLUT(slope, intercept);
+        }
     }
-  }
 
     // Module exports
     cornerstone.internal.getModalityLUT = getModalityLUT;
@@ -2168,23 +2404,23 @@ if(typeof cornerstone === 'undefined'){
 
 (function (cornerstone) {
 
-  'use strict';
+    'use strict';
 
-  function requestFrame(callback) {
-    window.setTimeout(callback, 1000 / 60);
-  }
+    function requestFrame(callback) {
+        window.setTimeout(callback, 1000 / 60);
+    }
 
-  function requestAnimationFrame(callback) {
-    return window.requestAnimationFrame(callback) ||
-      window.webkitRequestAnimationFrame(callback) ||
-      window.mozRequestAnimationFrame(callback) ||
-      window.oRequestAnimationFrame(callback) ||
-      window.msRequestAnimationFrame(callback) ||
-      requestFrame(callback);
-  }
+    function requestAnimationFrame(callback) {
+        return window.requestAnimationFrame(callback) ||
+            window.webkitRequestAnimationFrame(callback) ||
+            window.mozRequestAnimationFrame(callback) ||
+            window.oRequestAnimationFrame(callback) ||
+            window.msRequestAnimationFrame(callback) ||
+            requestFrame(callback);
+    }
 
-  // Module exports
-  cornerstone.requestAnimationFrame = requestAnimationFrame;
+    // Module exports
+    cornerstone.requestAnimationFrame = requestAnimationFrame;
 
 })(cornerstone);
 /**
@@ -2194,8 +2430,7 @@ if(typeof cornerstone === 'undefined'){
 
     "use strict";
 
-    function storedColorPixelDataToCanvasImageData(image, lut, canvasImageDataData)
-    {
+    function storedColorPixelDataToCanvasImageData(image, lut, canvasImageDataData) {
         var minPixelValue = image.minPixelValue;
         var canvasImageDataIndex = 0;
         var storedPixelDataIndex = 0;
@@ -2204,29 +2439,45 @@ if(typeof cornerstone === 'undefined'){
         var localLut = lut;
         var localCanvasImageDataData = canvasImageDataData;
 
-        // Wrap this intensive loop in an IIFE to prevent de-optimization if
-        // the image Object has members added to it.
-        (function () {
+        if (image.rgba === true) {
             // NOTE: As of Nov 2014, most javascript engines have lower performance when indexing negative indexes.
             // We have a special code path for this case that improves performance.  Thanks to @jpambrun for this enhancement
-            if(minPixelValue < 0){
-                while(storedPixelDataIndex < numPixels) {
+            if (minPixelValue < 0) {
+                while (storedPixelDataIndex < numPixels) {
+                    localCanvasImageDataData[canvasImageDataIndex++] = localLut[storedPixelData[storedPixelDataIndex++] + (-minPixelValue)]; // red
+                    localCanvasImageDataData[canvasImageDataIndex++] = localLut[storedPixelData[storedPixelDataIndex++] + (-minPixelValue)]; // green
+                    localCanvasImageDataData[canvasImageDataIndex++] = localLut[storedPixelData[storedPixelDataIndex++] + (-minPixelValue)]; // blue
+                    localCanvasImageDataData[canvasImageDataIndex++] = storedPixelData[storedPixelDataIndex++]; // alpha
+                }
+            } else {
+                while (storedPixelDataIndex < numPixels) {
+                    localCanvasImageDataData[canvasImageDataIndex++] = localLut[storedPixelData[storedPixelDataIndex++]]; // red
+                    localCanvasImageDataData[canvasImageDataIndex++] = localLut[storedPixelData[storedPixelDataIndex++]]; // green
+                    localCanvasImageDataData[canvasImageDataIndex++] = localLut[storedPixelData[storedPixelDataIndex++]]; // blue
+                    localCanvasImageDataData[canvasImageDataIndex++] = storedPixelData[storedPixelDataIndex++]; // alpha
+                }
+            }
+        } else {
+            // NOTE: As of Nov 2014, most javascript engines have lower performance when indexing negative indexes.
+            // We have a special code path for this case that improves performance.  Thanks to @jpambrun for this enhancement
+            if (minPixelValue < 0) {
+                while (storedPixelDataIndex < numPixels) {
                     localCanvasImageDataData[canvasImageDataIndex++] = localLut[storedPixelData[storedPixelDataIndex++] + (-minPixelValue)]; // red
                     localCanvasImageDataData[canvasImageDataIndex++] = localLut[storedPixelData[storedPixelDataIndex++] + (-minPixelValue)]; // green
                     localCanvasImageDataData[canvasImageDataIndex] = localLut[storedPixelData[storedPixelDataIndex] + (-minPixelValue)]; // blue
-                    storedPixelDataIndex+=2;
-                    canvasImageDataIndex+=2;
+                    storedPixelDataIndex += 2;
+                    canvasImageDataIndex += 2;
                 }
-            }else{
-                while(storedPixelDataIndex < numPixels) {
+            } else {
+                while (storedPixelDataIndex < numPixels) {
                     localCanvasImageDataData[canvasImageDataIndex++] = localLut[storedPixelData[storedPixelDataIndex++]]; // red
                     localCanvasImageDataData[canvasImageDataIndex++] = localLut[storedPixelData[storedPixelDataIndex++]]; // green
                     localCanvasImageDataData[canvasImageDataIndex] = localLut[storedPixelData[storedPixelDataIndex]]; // blue
-                    storedPixelDataIndex+=2;
-                    canvasImageDataIndex+=2;
+                    storedPixelDataIndex += 2;
+                    canvasImageDataIndex += 2;
                 }
             }
-        })();
+        }
     }
 
     // Module exports
@@ -2256,8 +2507,7 @@ if(typeof cornerstone === 'undefined'){
      * @param lut the lut
      * @param canvasImageDataData a canvasImgageData.data buffer filled with white pixels
      */
-    function storedPixelDataToCanvasImageData(image, lut, canvasImageDataData)
-    {
+    function storedPixelDataToCanvasImageData(image, lut, canvasImageDataData) {
         var pixelData = image.getPixelData();
         var minPixelValue = image.minPixelValue;
         var canvasImageDataIndex = 3;
@@ -2270,13 +2520,13 @@ if(typeof cornerstone === 'undefined'){
         (function () {
             // NOTE: As of Nov 2014, most javascript engines have lower performance when indexing negative indexes.
             // We have a special code path for this case that improves performance.  Thanks to @jpambrun for this enhancement
-            if(minPixelValue < 0){
-                while(storedPixelDataIndex < localNumPixels) {
+            if (minPixelValue < 0) {
+                while (storedPixelDataIndex < localNumPixels) {
                     localCanvasImageDataData[canvasImageDataIndex] = localLut[localPixelData[storedPixelDataIndex++] + (-minPixelValue)]; // alpha
                     canvasImageDataIndex += 4;
                 }
-            }else{
-                while(storedPixelDataIndex < localNumPixels) {
+            } else {
+                while (storedPixelDataIndex < localNumPixels) {
                     localCanvasImageDataData[canvasImageDataIndex] = localLut[localPixelData[storedPixelDataIndex++]]; // alpha
                     canvasImageDataIndex += 4;
                 }
@@ -2321,11 +2571,11 @@ if(typeof cornerstone === 'undefined'){
         this.reset();
     }
 
-    Transform.prototype.reset = function() {
-        this.m = [1,0,0,1,0,0];
+    Transform.prototype.reset = function () {
+        this.m = [1, 0, 0, 1, 0, 0];
     };
 
-    Transform.prototype.clone = function() {
+    Transform.prototype.clone = function () {
         var transform = new Transform();
         transform.m[0] = this.m[0];
         transform.m[1] = this.m[1];
@@ -2337,7 +2587,7 @@ if(typeof cornerstone === 'undefined'){
     };
 
 
-    Transform.prototype.multiply = function(matrix) {
+    Transform.prototype.multiply = function (matrix) {
         var m11 = this.m[0] * matrix.m[0] + this.m[2] * matrix.m[1];
         var m12 = this.m[1] * matrix.m[0] + this.m[3] * matrix.m[1];
 
@@ -2355,7 +2605,7 @@ if(typeof cornerstone === 'undefined'){
         this.m[5] = dy;
     };
 
-    Transform.prototype.invert = function() {
+    Transform.prototype.invert = function () {
         var d = 1 / (this.m[0] * this.m[3] - this.m[1] * this.m[2]);
         var m0 = this.m[3] * d;
         var m1 = -this.m[1] * d;
@@ -2371,7 +2621,7 @@ if(typeof cornerstone === 'undefined'){
         this.m[5] = m5;
     };
 
-    Transform.prototype.rotate = function(rad) {
+    Transform.prototype.rotate = function (rad) {
         var c = Math.cos(rad);
         var s = Math.sin(rad);
         var m11 = this.m[0] * c + this.m[2] * s;
@@ -2384,24 +2634,27 @@ if(typeof cornerstone === 'undefined'){
         this.m[3] = m22;
     };
 
-    Transform.prototype.translate = function(x, y) {
+    Transform.prototype.translate = function (x, y) {
         this.m[4] += this.m[0] * x + this.m[2] * y;
         this.m[5] += this.m[1] * x + this.m[3] * y;
     };
 
-    Transform.prototype.scale = function(sx, sy) {
+    Transform.prototype.scale = function (sx, sy) {
         this.m[0] *= sx;
         this.m[1] *= sx;
         this.m[2] *= sy;
         this.m[3] *= sy;
     };
 
-    Transform.prototype.transformPoint = function(px, py) {
+    Transform.prototype.transformPoint = function (px, py) {
         var x = px;
         var y = py;
         px = x * this.m[0] + y * this.m[2] + this.m[4];
         py = x * this.m[1] + y * this.m[3] + this.m[5];
-        return {x: px, y: py};
+        return {
+            x: px,
+            y: py
+        };
     };
 
     cornerstone.internal.Transform = Transform;
@@ -2412,44 +2665,40 @@ if(typeof cornerstone === 'undefined'){
 
 (function (cornerstone) {
 
-  "use strict";
+    "use strict";
 
-  function generateLinearVOILUT(windowWidth, windowCenter) {
-    return function(modalityLutValue) {
-      return (((modalityLutValue - (windowCenter)) / (windowWidth) + 0.5) * 255.0);
+    function generateLinearVOILUT(windowWidth, windowCenter) {
+        return function (modalityLutValue) {
+            return (((modalityLutValue - (windowCenter)) / (windowWidth) + 0.5) * 255.0);
+        }
     }
-  }
 
-  function generateNonLinearVOILUT(voiLUT) {
-    var shift = voiLUT.numBitsPerEntry - 8;
-    var minValue = voiLUT.lut[0] >> shift;
-    var maxValue = voiLUT.lut[voiLUT.lut.length -1] >> shift;
-    var maxValueMapped = voiLUT.firstValueMapped + voiLUT.lut.length - 1;
-    return function(modalityLutValue) {
-      if(modalityLutValue < voiLUT.firstValueMapped) {
-        return minValue;
-      }
-      else if(modalityLutValue >= maxValueMapped)
-      {
-        return maxValue;
-      }
-      else
-      {
-        return voiLUT.lut[modalityLutValue - voiLUT.firstValueMapped] >> shift;
-      }
+    function generateNonLinearVOILUT(voiLUT) {
+        var shift = voiLUT.numBitsPerEntry - 8;
+        var minValue = voiLUT.lut[0] >> shift;
+        var maxValue = voiLUT.lut[voiLUT.lut.length - 1] >> shift;
+        var maxValueMapped = voiLUT.firstValueMapped + voiLUT.lut.length - 1;
+        return function (modalityLutValue) {
+            if (modalityLutValue < voiLUT.firstValueMapped) {
+                return minValue;
+            } else if (modalityLutValue >= maxValueMapped) {
+                return maxValue;
+            } else {
+                return voiLUT.lut[modalityLutValue - voiLUT.firstValueMapped] >> shift;
+            }
+        }
     }
-  }
 
-  function getVOILUT(windowWidth, windowCenter, voiLUT) {
-    if(voiLUT) {
-      return generateNonLinearVOILUT(voiLUT);
-    } else {
-      return generateLinearVOILUT(windowWidth, windowCenter);
+    function getVOILUT(windowWidth, windowCenter, voiLUT) {
+        if (voiLUT) {
+            return generateNonLinearVOILUT(voiLUT);
+        } else {
+            return generateLinearVOILUT(windowWidth, windowCenter);
+        }
     }
-  }
 
-  // Module exports
-  cornerstone.internal.getVOILUT = getVOILUT;
+    // Module exports
+    cornerstone.internal.getVOILUT = getVOILUT;
 }(cornerstone));
 
 /**
@@ -2490,7 +2739,7 @@ if(typeof cornerstone === 'undefined'){
     function invalidateImageId(imageId) {
 
         var enabledElements = cornerstone.getEnabledElementsByImageId(imageId);
-        enabledElements.forEach(function(enabledElement) {
+        enabledElements.forEach(function (enabledElement) {
             cornerstone.drawImage(enabledElement, true);
         });
     }
@@ -2503,18 +2752,18 @@ if(typeof cornerstone === 'undefined'){
     "use strict";
 
     function guid() {
-      function s4() {
-        return Math.floor((1 + Math.random()) * 0x10000)
-          .toString(16)
-          .substring(1);
-      }
-      return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-        s4() + '-' + s4() + s4() + s4();
+        function s4() {
+            return Math.floor((1 + Math.random()) * 0x10000)
+                .toString(16)
+                .substring(1);
+        }
+        return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+            s4() + '-' + s4() + s4() + s4();
     }
 
     function indexOfInObjectArray(array, property, value) {
         var found = -1;
-        array.forEach(function(object, index) {
+        array.forEach(function (object, index) {
             if (object[property] === value) {
                 found = index;
                 return false;
@@ -2526,7 +2775,7 @@ if(typeof cornerstone === 'undefined'){
 
     function addLayer(element, image, options) {
         var enabledElement = cornerstone.getEnabledElement(element);
-        
+
         var layerId = guid();
 
         // Set syncViewports to true by default when a new layer is added
@@ -2557,7 +2806,7 @@ if(typeof cornerstone === 'undefined'){
 
     function getLayers(element, layerId) {
         var enabledElement = cornerstone.getEnabledElement(element);
-        
+
         // If a layer ID is provided, return the details of that layer
         if (layerId) {
             var index = indexOfInObjectArray(enabledElement.layers, 'layerId', layerId);
@@ -2576,75 +2825,75 @@ if(typeof cornerstone === 'undefined'){
 
 }(cornerstone));
 
-(function($, cornerstone) {
+(function ($, cornerstone) {
 
-  'use strict';
+    'use strict';
 
-  // this module defines a way to access various metadata about an imageId.  This layer of abstraction exists
-  // so metadata can be provided in different ways (e.g. by parsing DICOM P10 or by a WADO-RS document)
+    // this module defines a way to access various metadata about an imageId.  This layer of abstraction exists
+    // so metadata can be provided in different ways (e.g. by parsing DICOM P10 or by a WADO-RS document)
 
-  var providers = [];
+    var providers = [];
 
-  /**
-   * Adds a metadata provider with the specified priority
-   * @param provider
-   * @param priority - 0 is default/normal, > 0 is high, < 0 is low
-   */
-  function addProvider(provider, priority) {
-    priority = priority || 0; // default priority
-    // find the right spot to insert this provider based on priority
-    for(var i=0; i < providers.length; i++) {
-      if(providers[i].priority <= priority) {
-        break;
-      }
+    /**
+     * Adds a metadata provider with the specified priority
+     * @param provider
+     * @param priority - 0 is default/normal, > 0 is high, < 0 is low
+     */
+    function addProvider(provider, priority) {
+        priority = priority || 0; // default priority
+        // find the right spot to insert this provider based on priority
+        for (var i = 0; i < providers.length; i++) {
+            if (providers[i].priority <= priority) {
+                break;
+            }
+        }
+
+        // insert the decode task at position i
+        providers.splice(i, 0, {
+            priority: priority,
+            provider: provider
+        });
+
     }
 
-    // insert the decode task at position i
-    providers.splice(i, 0, {
-      priority: priority,
-      provider: provider
-    });
-
-  }
-
-  /**
-   * Removes the specified provider
-   * @param provider
-   */
-  function removeProvider( provider) {
-    for(var i=0; i < providers.length; i++) {
-      if(providers[i].provider === provider) {
-        providers.splice(i, 1);
-        return;
-      }
+    /**
+     * Removes the specified provider
+     * @param provider
+     */
+    function removeProvider(provider) {
+        for (var i = 0; i < providers.length; i++) {
+            if (providers[i].provider === provider) {
+                providers.splice(i, 1);
+                return;
+            }
+        }
     }
-  }
 
-  /**
-   * Gets metadata from the registered metadata providers.  Will call each one from highest priority to lowest
-   * until one responds
-   *
-   * @param type
-   * @param imageId
-   * @returns {boolean}
-   */
-  function getMetaData(type, imageId) {
-    // invoke each provider in priority order until one returns something
-    for(var i=0; i < providers.length; i++) {
-      var result;
-      result = providers[i].provider(type, imageId);
-      if (result !== undefined) {
-        return result;
-      }
+    /**
+     * Gets metadata from the registered metadata providers.  Will call each one from highest priority to lowest
+     * until one responds
+     *
+     * @param type
+     * @param imageId
+     * @returns {boolean}
+     */
+    function getMetaData(type, imageId) {
+        // invoke each provider in priority order until one returns something
+        for (var i = 0; i < providers.length; i++) {
+            var result;
+            result = providers[i].provider(type, imageId);
+            if (result !== undefined) {
+                return result;
+            }
+        }
     }
-  }
 
-  // module/private exports
-  cornerstone.metaData = {
-    addProvider: addProvider,
-    removeProvider: removeProvider,
-    get: getMetaData
-  };
+    // module/private exports
+    cornerstone.metaData = {
+        addProvider: addProvider,
+        removeProvider: removeProvider,
+        get: getMetaData
+    };
 
 })($, cornerstone);
 
@@ -2666,7 +2915,7 @@ if(typeof cornerstone === 'undefined'){
     function pageToPixel(element, pageX, pageY) {
         var enabledElement = cornerstone.getEnabledElement(element);
 
-        if(enabledElement.image === undefined) {
+        if (enabledElement.image === undefined) {
             throw "image has not been loaded yet";
         }
 
@@ -2677,7 +2926,10 @@ if(typeof cornerstone === 'undefined'){
         var clientX = pageX - rect.left - window.pageXOffset;
         var clientY = pageY - rect.top - window.pageYOffset;
 
-        var pt = {x: clientX, y: clientY};
+        var pt = {
+            x: clientX,
+            y: clientY
+        };
         var transform = cornerstone.internal.getTransform(enabledElement);
         transform.invert();
         return transform.transformPoint(pt.x, pt.y);
@@ -2688,7 +2940,7 @@ if(typeof cornerstone === 'undefined'){
 
 }(cornerstone));
 
-(function(cornerstone) {
+(function (cornerstone) {
 
     "use strict";
 
@@ -2709,10 +2961,10 @@ if(typeof cornerstone === 'undefined'){
         image.color = true;
         image.falseColor = true;
         image.origPixelData = origPixelData;
-        
+
         if (lut instanceof cornerstone.colors.LookupTable) {
             lut.build();
-            
+
             while (storedPixelDataIndex < numPixels) {
                 sp = origPixelData[storedPixelDataIndex++];
                 mapped = lut.mapValue(sp);
@@ -2738,7 +2990,7 @@ if(typeof cornerstone === 'undefined'){
                         storedColorPixelData[canvasImageDataIndex++] = localLut[sp][1]; // green
                         storedColorPixelData[canvasImageDataIndex++] = localLut[sp][2]; // blue
                         storedColorPixelData[canvasImageDataIndex++] = localLut[sp][3]; // alpha
-                    } catch(error) {
+                    } catch (error) {
                         console.log(sp);
                         console.log(error);
                     }
@@ -2753,7 +3005,7 @@ if(typeof cornerstone === 'undefined'){
         image.maxPixelValue = 255;
         image.windowWidth = 255;
         image.windowCenter = 128;
-        image.getPixelData = function() {
+        image.getPixelData = function () {
             return storedColorPixelData;
         };
     }
@@ -2799,8 +3051,7 @@ if(typeof cornerstone === 'undefined'){
     var lastRenderedImageId;
     var lastRenderedViewport = {};
 
-    function initializeColorRenderCanvas(image)
-    {
+    function initializeColorRenderCanvas(image) {
         // Resize the canvas
         colorRenderCanvas.width = image.width;
         colorRenderCanvas.height = image.height;
@@ -2808,15 +3059,14 @@ if(typeof cornerstone === 'undefined'){
         // get the canvas data so we can write to it directly
         colorRenderCanvasContext = colorRenderCanvas.getContext('2d');
         colorRenderCanvasContext.fillStyle = 'white';
-        colorRenderCanvasContext.fillRect(0,0, colorRenderCanvas.width, colorRenderCanvas.height);
-        colorRenderCanvasData = colorRenderCanvasContext.getImageData(0,0,image.width, image.height);
+        colorRenderCanvasContext.fillRect(0, 0, colorRenderCanvas.width, colorRenderCanvas.height);
+        colorRenderCanvasData = colorRenderCanvasContext.getImageData(0, 0, image.width, image.height);
     }
 
 
-    function getLut(image, viewport)
-    {
+    function getLut(image, viewport) {
         // if we have a cached lut and it has the right values, return it immediately
-        if(image.lut !== undefined &&
+        if (image.lut !== undefined &&
             image.lut.windowCenter === viewport.voi.windowCenter &&
             image.lut.windowWidth === viewport.voi.windowWidth &&
             image.lut.invert === viewport.invert) {
@@ -2831,47 +3081,43 @@ if(typeof cornerstone === 'undefined'){
         return image.lut;
     }
 
-    function doesImageNeedToBeRendered(enabledElement, image)
-    {
-        if(image.imageId !== lastRenderedImageId ||
+    function doesImageNeedToBeRendered(enabledElement, image) {
+        if (image.imageId !== lastRenderedImageId ||
             lastRenderedViewport.windowCenter !== enabledElement.viewport.voi.windowCenter ||
             lastRenderedViewport.windowWidth !== enabledElement.viewport.voi.windowWidth ||
             lastRenderedViewport.invert !== enabledElement.viewport.invert ||
-            lastRenderedViewport.rotation !== enabledElement.viewport.rotation ||  
+            lastRenderedViewport.rotation !== enabledElement.viewport.rotation ||
             lastRenderedViewport.hflip !== enabledElement.viewport.hflip ||
             lastRenderedViewport.vflip !== enabledElement.viewport.vflip
-            )
-        {
+        ) {
             return true;
         }
 
         return false;
     }
 
-    function getRenderCanvas(enabledElement, image, invalidated)
-    {
+    function getRenderCanvas(enabledElement, image, invalidated) {
 
         // The ww/wc is identity and not inverted - get a canvas with the image rendered into it for
         // fast drawing
-        if(enabledElement.viewport.voi.windowWidth === 255 &&
+        if (enabledElement.viewport.voi.windowWidth === 255 &&
             enabledElement.viewport.voi.windowCenter === 128 &&
             enabledElement.viewport.invert === false &&
             image.getCanvas &&
             image.getCanvas()
-        )
-        {
+        ) {
             return image.getCanvas();
         }
 
         // apply the lut to the stored pixel data onto the render canvas
-        if(doesImageNeedToBeRendered(enabledElement, image) === false && invalidated !== true) {
+        if (doesImageNeedToBeRendered(enabledElement, image) === false && invalidated !== true) {
             return colorRenderCanvas;
         }
 
         // If our render canvas does not match the size of this image reset it
         // NOTE: This might be inefficient if we are updating multiple images of different
         // sizes frequently.
-        if(colorRenderCanvas.width !== image.width || colorRenderCanvas.height != image.height) {
+        if (colorRenderCanvas.width !== image.width || colorRenderCanvas.height != image.height) {
             initializeColorRenderCanvas(image);
         }
 
@@ -2892,11 +3138,11 @@ if(typeof cornerstone === 'undefined'){
      */
     function renderColorImage(enabledElement, invalidated) {
 
-        if(enabledElement === undefined) {
+        if (enabledElement === undefined) {
             throw "drawImage: enabledElement parameter must not be undefined";
         }
         var image = enabledElement.image;
-        if(image === undefined) {
+        if (image === undefined) {
             throw "drawImage: image must be loaded before it can be drawn";
         }
 
@@ -2906,14 +3152,13 @@ if(typeof cornerstone === 'undefined'){
 
         // clear the canvas
         context.fillStyle = 'black';
-        context.fillRect(0,0, enabledElement.canvas.width, enabledElement.canvas.height);
+        context.fillRect(0, 0, enabledElement.canvas.width, enabledElement.canvas.height);
 
         // turn off image smooth/interpolation if pixelReplication is set in the viewport
-        if(enabledElement.viewport.pixelReplication === true) {
+        if (enabledElement.viewport.pixelReplication === true) {
             context.imageSmoothingEnabled = false;
             context.mozImageSmoothingEnabled = false; // firefox doesn't support imageSmoothingEnabled yet
-        }
-        else {
+        } else {
             context.imageSmoothingEnabled = true;
             context.mozImageSmoothingEnabled = true;
         }
@@ -2934,7 +3179,7 @@ if(typeof cornerstone === 'undefined'){
             renderCanvas = getRenderCanvas(enabledElement, image, invalidated);
         }
 
-        context.drawImage(renderCanvas, 0,0, image.width, image.height, 0, 0, image.width, image.height);
+        context.drawImage(renderCanvas, 0, 0, image.width, image.height, 0, 0, image.width, image.height);
 
         context.restore();
 
@@ -2948,12 +3193,12 @@ if(typeof cornerstone === 'undefined'){
     }
 
     function addColorLayer(layer, invalidated) {
-        if(layer === undefined) {
+        if (layer === undefined) {
             throw "drawImage: layer parameter must not be undefined";
         }
 
         var image = layer.image;
-        if(image === undefined) {
+        if (image === undefined) {
             throw "drawImage: image must be loaded before it can be drawn";
         }
 
@@ -2962,7 +3207,7 @@ if(typeof cornerstone === 'undefined'){
         var context = layer.canvas.getContext('2d');
 
         // turn off image smooth/interpolation if pixelReplication is set in the viewport
-        if(layer.viewport.pixelReplication === true) {
+        if (layer.viewport.pixelReplication === true) {
             context.imageSmoothingEnabled = false;
             context.mozImageSmoothingEnabled = false; // firefox doesn't support imageSmoothingEnabled yet
         } else {
@@ -3003,8 +3248,7 @@ if(typeof cornerstone === 'undefined'){
     var lastRenderedImageId;
     var lastRenderedViewport = {};
 
-    function initializeGrayscaleRenderCanvas(image)
-    {
+    function initializeGrayscaleRenderCanvas(image) {
         // Resize the canvas
         grayscaleRenderCanvas.width = image.width;
         grayscaleRenderCanvas.height = image.height;
@@ -3013,27 +3257,26 @@ if(typeof cornerstone === 'undefined'){
         // using the alpha channel to improve rendering performance.
         grayscaleRenderCanvasContext = grayscaleRenderCanvas.getContext('2d');
         grayscaleRenderCanvasContext.fillStyle = 'white';
-        grayscaleRenderCanvasContext.fillRect(0,0, grayscaleRenderCanvas.width, grayscaleRenderCanvas.height);
-        grayscaleRenderCanvasData = grayscaleRenderCanvasContext.getImageData(0,0,image.width, image.height);
+        grayscaleRenderCanvasContext.fillRect(0, 0, grayscaleRenderCanvas.width, grayscaleRenderCanvas.height);
+        grayscaleRenderCanvasData = grayscaleRenderCanvasContext.getImageData(0, 0, image.width, image.height);
     }
 
     function lutMatches(a, b) {
-      // if undefined, they are equal
-      if(!a && !b) {
-        return true;
-      }
-      // if one is undefined, not equal
-      if(!a || !b) {
-        return false;
-      }
-      // check the unique ids
-      return (a.id === b.id)
+        // if undefined, they are equal
+        if (!a && !b) {
+            return true;
+        }
+        // if one is undefined, not equal
+        if (!a || !b) {
+            return false;
+        }
+        // check the unique ids
+        return (a.id === b.id)
     }
 
-    function getLut(image, viewport, invalidated)
-    {
+    function getLut(image, viewport, invalidated) {
         // if we have a cached lut and it has the right values, return it immediately
-        if(image.lut !== undefined &&
+        if (image.lut !== undefined &&
             image.lut.windowCenter === viewport.voi.windowCenter &&
             image.lut.windowWidth === viewport.voi.windowWidth &&
             lutMatches(image.lut.modalityLUT, viewport.modalityLUT) &&
@@ -3053,9 +3296,8 @@ if(typeof cornerstone === 'undefined'){
         return image.lut;
     }
 
-    function doesImageNeedToBeRendered(enabledElement, image)
-    {
-        if(image.imageId !== lastRenderedImageId ||
+    function doesImageNeedToBeRendered(enabledElement, image) {
+        if (image.imageId !== lastRenderedImageId ||
             lastRenderedViewport.windowCenter !== enabledElement.viewport.voi.windowCenter ||
             lastRenderedViewport.windowWidth !== enabledElement.viewport.voi.windowWidth ||
             lastRenderedViewport.invert !== enabledElement.viewport.invert ||
@@ -3064,26 +3306,24 @@ if(typeof cornerstone === 'undefined'){
             lastRenderedViewport.vflip !== enabledElement.viewport.vflip ||
             lastRenderedViewport.modalityLUT !== enabledElement.viewport.modalityLUT ||
             lastRenderedViewport.voiLUT !== enabledElement.viewport.voiLUT
-            )
-        {
+        ) {
             return true;
         }
 
         return false;
     }
 
-    function getRenderCanvas(enabledElement, image, invalidated)
-    {
+    function getRenderCanvas(enabledElement, image, invalidated) {
         // apply the lut to the stored pixel data onto the render canvas
 
-        if(doesImageNeedToBeRendered(enabledElement, image) === false && invalidated !== true) {
+        if (doesImageNeedToBeRendered(enabledElement, image) === false && invalidated !== true) {
             return grayscaleRenderCanvas;
         }
 
         // If our render canvas does not match the size of this image reset it
         // NOTE: This might be inefficient if we are updating multiple images of different
         // sizes frequently.
-        if(grayscaleRenderCanvas.width !== image.width || grayscaleRenderCanvas.height != image.height) {
+        if (grayscaleRenderCanvas.width !== image.width || grayscaleRenderCanvas.height != image.height) {
             initializeGrayscaleRenderCanvas(image);
         }
 
@@ -3116,14 +3356,13 @@ if(typeof cornerstone === 'undefined'){
 
         // clear the canvas
         context.fillStyle = 'black';
-        context.fillRect(0,0, enabledElement.canvas.width, enabledElement.canvas.height);
+        context.fillRect(0, 0, enabledElement.canvas.width, enabledElement.canvas.height);
 
         // turn off image smooth/interpolation if pixelReplication is set in the viewport
-        if(enabledElement.viewport.pixelReplication === true) {
+        if (enabledElement.viewport.pixelReplication === true) {
             context.imageSmoothingEnabled = false;
             context.mozImageSmoothingEnabled = false; // firefox doesn't support imageSmoothingEnabled yet
-        }
-        else {
+        } else {
             context.imageSmoothingEnabled = true;
             context.mozImageSmoothingEnabled = true;
         }
@@ -3144,7 +3383,7 @@ if(typeof cornerstone === 'undefined'){
         }
 
         // Draw the render canvas half the image size (because we set origin to the middle of the canvas above)
-        context.drawImage(renderCanvas, 0,0, image.width, image.height, 0, 0, image.width, image.height);
+        context.drawImage(renderCanvas, 0, 0, image.width, image.height, 0, 0, image.width, image.height);
 
         lastRenderedImageId = image.imageId;
         lastRenderedViewport.windowCenter = enabledElement.viewport.voi.windowCenter;
@@ -3158,12 +3397,12 @@ if(typeof cornerstone === 'undefined'){
     }
 
     function addGrayscaleLayer(layer, invalidated) {
-        if(layer === undefined) {
+        if (layer === undefined) {
             throw "drawImage: layer parameter must not be undefined";
         }
 
         var image = layer.image;
-        if(image === undefined) {
+        if (image === undefined) {
             throw "drawImage: image must be loaded before it can be drawn";
         }
 
@@ -3172,7 +3411,7 @@ if(typeof cornerstone === 'undefined'){
         var context = layer.canvas.getContext('2d');
 
         // turn off image smooth/interpolation if pixelReplication is set in the viewport
-        if(layer.viewport.pixelReplication === true) {
+        if (layer.viewport.pixelReplication === true) {
             context.imageSmoothingEnabled = false;
             context.mozImageSmoothingEnabled = false; // firefox doesn't support imageSmoothingEnabled yet
         } else {
@@ -3213,7 +3452,7 @@ if(typeof cornerstone === 'undefined'){
 
         // We aren't checking if needsRedraw is true because once this
         // method is called the image WILL BE rendered.
-        if (!enabledElement.canvas || !(enabledElement.image || layers.length)){
+        if (!enabledElement.canvas || !(enabledElement.image || layers.length)) {
             return;
         }
 
@@ -3224,7 +3463,7 @@ if(typeof cornerstone === 'undefined'){
         } else if (image) {
             var render = image.render;
 
-            if(!render) {
+            if (!render) {
                 render = image.color ? cornerstone.renderColorImage : cornerstone.renderGrayscaleImage;
             }
 
@@ -3269,11 +3508,11 @@ if(typeof cornerstone === 'undefined'){
      */
     function renderWebImage(enabledElement, invalidated) {
 
-        if(enabledElement === undefined) {
+        if (enabledElement === undefined) {
             throw "drawImage: enabledElement parameter must not be undefined";
         }
         var image = enabledElement.image;
-        if(image === undefined) {
+        if (image === undefined) {
             throw "drawImage: image must be loaded before it can be drawn";
         }
 
@@ -3283,14 +3522,13 @@ if(typeof cornerstone === 'undefined'){
 
         // clear the canvas
         context.fillStyle = 'black';
-        context.fillRect(0,0, enabledElement.canvas.width, enabledElement.canvas.height);
+        context.fillRect(0, 0, enabledElement.canvas.width, enabledElement.canvas.height);
 
         // turn off image smooth/interpolation if pixelReplication is set in the viewport
-        if(enabledElement.viewport.pixelReplication === true) {
+        if (enabledElement.viewport.pixelReplication === true) {
             context.imageSmoothingEnabled = false;
             context.mozImageSmoothingEnabled = false; // firefox doesn't support imageSmoothingEnabled yet
-        }
-        else {
+        } else {
             context.imageSmoothingEnabled = true;
             context.mozImageSmoothingEnabled = true;
         }
@@ -3300,10 +3538,9 @@ if(typeof cornerstone === 'undefined'){
 
         // if the viewport ww/wc and invert all match the initial state of the image, we can draw the image
         // directly.  If any of those are changed, we call renderColorImage() to apply the lut
-        if(enabledElement.viewport.voi.windowWidth === enabledElement.image.windowWidth &&
+        if (enabledElement.viewport.voi.windowWidth === enabledElement.image.windowWidth &&
             enabledElement.viewport.voi.windowCenter === enabledElement.image.windowCenter &&
-            enabledElement.viewport.invert === false)
-        {
+            enabledElement.viewport.invert === false) {
             context.drawImage(image.getImage(), 0, 0, image.width, image.height, 0, 0, image.width, image.height);
         } else {
             cornerstone.renderColorImage(enabledElement, invalidated);
@@ -3320,22 +3557,21 @@ if(typeof cornerstone === 'undefined'){
  */
 (function (cornerstone) {
 
-  "use strict";
+    "use strict";
 
-  /**
-   * Resets the viewport to the default settings
-   *
-   * @param element
-   */
-  function reset(element)
-  {
-    var enabledElement = cornerstone.getEnabledElement(element);
-    var defaultViewport = cornerstone.internal.getDefaultViewport(enabledElement.canvas, enabledElement.image);
-    enabledElement.viewport = defaultViewport;
-    cornerstone.updateImage(element);
-  }
+    /**
+     * Resets the viewport to the default settings
+     *
+     * @param element
+     */
+    function reset(element) {
+        var enabledElement = cornerstone.getEnabledElement(element);
+        var defaultViewport = cornerstone.internal.getDefaultViewport(enabledElement.canvas, enabledElement.image);
+        enabledElement.viewport = defaultViewport;
+        cornerstone.updateImage(element);
+    }
 
-  cornerstone.reset = reset;
+    cornerstone.reset = reset;
 }(cornerstone));
 
 /**
@@ -3345,8 +3581,7 @@ if(typeof cornerstone === 'undefined'){
 
     "use strict";
 
-    function setCanvasSize(element, canvas)
-    {
+    function setCanvasSize(element, canvas) {
         // the device pixel ratio is 1.0 for normal displays and > 1.0
         // for high DPI displays like Retina
         /*
@@ -3391,14 +3626,13 @@ if(typeof cornerstone === 'undefined'){
 
         $(element).trigger("CornerstoneElementResized", eventData);
 
-        if(enabledElement.image === undefined ) {
+        if (enabledElement.image === undefined) {
             return;
         }
 
-        if(fitToWindow === true) {
+        if (fitToWindow === true) {
             cornerstone.fitToWindow(element);
-        }
-        else {
+        } else {
             cornerstone.updateImage(element);
         }
     }
@@ -3424,17 +3658,16 @@ if(typeof cornerstone === 'undefined'){
      * @param context
      * @param scale optional scaler to apply
      */
-    function setToPixelCoordinateSystem(enabledElement, context, scale)
-    {
-        if(enabledElement === undefined) {
+    function setToPixelCoordinateSystem(enabledElement, context, scale) {
+        if (enabledElement === undefined) {
             throw "setToPixelCoordinateSystem: parameter enabledElement must not be undefined";
         }
-        if(context === undefined) {
+        if (context === undefined) {
             throw "setToPixelCoordinateSystem: parameter context must not be undefined";
         }
 
         var transform = cornerstone.internal.calculateTransform(enabledElement, scale);
-        context.setTransform(transform.m[0],transform.m[1],transform.m[2],transform.m[3],transform.m[4],transform.m[5]);
+        context.setTransform(transform.m[0], transform.m[1], transform.m[2], transform.m[3], transform.m[4], transform.m[5]);
     }
 
     // Module exports
@@ -3473,15 +3706,15 @@ if(typeof cornerstone === 'undefined'){
 
         // prevent window width from being too small (note that values close to zero are valid and can occur with
         // PET images in particular)
-        if(enabledElement.viewport.voi.windowWidth < 0.000001) {
+        if (enabledElement.viewport.voi.windowWidth < 0.000001) {
             enabledElement.viewport.voi.windowWidth = 0.000001;
         }
         // prevent scale from getting too small
-        if(enabledElement.viewport.scale < 0.0001) {
+        if (enabledElement.viewport.scale < 0.0001) {
             enabledElement.viewport.scale = 0.25;
         }
 
-        if(enabledElement.viewport.rotation===360 || enabledElement.viewport.rotation===-360) {
+        if (enabledElement.viewport.rotation === 360 || enabledElement.viewport.rotation === -360) {
             enabledElement.viewport.rotation = 0;
         }
 
@@ -3509,7 +3742,7 @@ if(typeof cornerstone === 'undefined'){
     function updateImage(element, invalidated) {
         var enabledElement = cornerstone.getEnabledElement(element);
 
-        if(!enabledElement.image && !enabledElement.layers) {
+        if (!enabledElement.image && !enabledElement.layers) {
             throw "updateImage: image has not been loaded yet";
         }
 
@@ -3538,7 +3771,7 @@ if(typeof cornerstone === 'undefined'){
      * @return {!WebGLShader} The shader.
      */
     function compileShader(gl, shaderSource, shaderType) {
-        
+
         // Create the shader object
         var shader = gl.createShader(shaderType);
 
@@ -3568,7 +3801,7 @@ if(typeof cornerstone === 'undefined'){
      * @return {!WebGLProgram} A program.
      */
     function createProgram(gl, vertexShader, fragmentShader) {
-        
+
         // create a program.
         var program = gl.createProgram();
 
@@ -3631,7 +3864,7 @@ if(typeof cornerstone === 'undefined'){
     function initShaders() {
         for (var id in cornerstone.webGL.shaders) {
             //console.log("WEBGL: Loading shader", id);
-            var shader = cornerstone.webGL.shaders[ id ];
+            var shader = cornerstone.webGL.shaders[id];
             shader.attributes = {};
             shader.uniforms = {};
             shader.vert = cornerstone.webGL.vertexShader;
@@ -3640,10 +3873,10 @@ if(typeof cornerstone === 'undefined'){
 
             shader.attributes.texCoordLocation = gl.getAttribLocation(shader.program, "a_texCoord");
             gl.enableVertexAttribArray(shader.attributes.texCoordLocation);
-        
+
             shader.attributes.positionLocation = gl.getAttribLocation(shader.program, "a_position");
             gl.enableVertexAttribArray(shader.attributes.positionLocation);
-        
+
             shader.uniforms.resolutionLocation = gl.getUniformLocation(shader.program, "u_resolution");
         }
     }
@@ -3667,7 +3900,8 @@ if(typeof cornerstone === 'undefined'){
             width, height,
             0, height,
             width, 0,
-            0, 0]), gl.STATIC_DRAW);
+            0, 0
+        ]), gl.STATIC_DRAW);
     }
 
     function handleLostContext(event) {
@@ -3707,7 +3941,7 @@ if(typeof cornerstone === 'undefined'){
             canvas.removeEventListener("webglcontextrestored", handleRestoredContext, false);
             canvas.addEventListener("webglcontextrestored", handleRestoredContext, false);
 
-        } catch(error) {
+        } catch (error) {
             throw "Error creating WebGL context";
         }
 
@@ -3751,7 +3985,7 @@ if(typeof cornerstone === 'undefined'){
         return shader;
     }
 
-    function getImageTexture( image ) {
+    function getImageTexture(image) {
         var imageTexture = cornerstone.webGL.textureCache.getImageTexture(image.imageId);
         if (!imageTexture) {
             //console.log("Generating texture for imageid: ", image.imageId);
@@ -3762,7 +3996,7 @@ if(typeof cornerstone === 'undefined'){
 
     }
 
-    function generateTexture( image ) {
+    function generateTexture(image) {
         var TEXTURE_FORMAT = {
             uint8: gl.LUMINANCE,
             int8: gl.LUMINANCE_ALPHA,
@@ -3784,7 +4018,7 @@ if(typeof cornerstone === 'undefined'){
         // GL texture configuration
         var texture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, texture);
-        
+
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -3814,8 +4048,8 @@ if(typeof cornerstone === 'undefined'){
             1, 0,
             0, 0
         ]), gl.STATIC_DRAW);
- 
- 
+
+
         texCoordBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
@@ -3827,9 +4061,9 @@ if(typeof cornerstone === 'undefined'){
     }
 
     function renderQuad(shader, parameters, texture, width, height) {
-        gl.clearColor(1.0,0.0,0.0,1.0);
-        gl.viewport( 0, 0, width, height );
-        
+        gl.clearColor(1.0, 0.0, 0.0, 1.0);
+        gl.viewport(0, 0, width, height);
+
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.useProgram(shader.program);
 
@@ -3841,7 +4075,7 @@ if(typeof cornerstone === 'undefined'){
 
         for (var key in parameters) {
             var uniformLocation = gl.getUniformLocation(shader.program, key);
-            if ( !uniformLocation ) {
+            if (!uniformLocation) {
                 throw "Could not access location for uniform: " + key;
             }
 
@@ -3850,17 +4084,17 @@ if(typeof cornerstone === 'undefined'){
             var type = uniform.type;
             var value = uniform.value;
 
-            if( type == "i" ) {
-                gl.uniform1i( uniformLocation, value );
-            } else if( type == "f" ) {
-                gl.uniform1f( uniformLocation, value );
-            } else if( type == "2f" ) {
-                gl.uniform2f( uniformLocation, value[0], value[1] );
+            if (type == "i") {
+                gl.uniform1i(uniformLocation, value);
+            } else if (type == "f") {
+                gl.uniform1f(uniformLocation, value);
+            } else if (type == "2f") {
+                gl.uniform2f(uniformLocation, value[0], value[1]);
             }
         }
 
         updateRectangle(gl, width, height);
-        
+
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -3879,15 +4113,33 @@ if(typeof cornerstone === 'undefined'){
         var shader = getShaderProgram(image);
         var texture = getImageTexture(image);
         var parameters = {
-            "u_resolution": { type: "2f", value: [image.width, image.height] },
-            "wc": { type: "f", value: viewport.voi.windowCenter },
-            "ww": { type: "f", value: viewport.voi.windowWidth },
-            "slope": { type: "f", value: image.slope },
-            "intercept": { type: "f", value: image.intercept },
+            "u_resolution": {
+                type: "2f",
+                value: [image.width, image.height]
+            },
+            "wc": {
+                type: "f",
+                value: viewport.voi.windowCenter
+            },
+            "ww": {
+                type: "f",
+                value: viewport.voi.windowWidth
+            },
+            "slope": {
+                type: "f",
+                value: image.slope
+            },
+            "intercept": {
+                type: "f",
+                value: image.intercept
+            },
             //"minPixelValue": { type: "f", value: image.minPixelValue },
-            "invert": { type: "i", value: viewport.invert ? 1 : 0 },
+            "invert": {
+                type: "i",
+                value: viewport.invert ? 1 : 0
+            },
         };
-        renderQuad(shader, parameters, texture, image.width, image.height );
+        renderQuad(shader, parameters, texture, image.width, image.height);
 
         return renderCanvas;
     }
@@ -3895,7 +4147,7 @@ if(typeof cornerstone === 'undefined'){
     function isWebGLAvailable() {
         // Adapted from
         // http://stackoverflow.com/questions/9899807/three-js-detect-webgl-support-and-fallback-to-regular-canvas
-        
+
         var options = {
             failIfMajorPerformanceCaveat: true
         };
@@ -3905,7 +4157,7 @@ if(typeof cornerstone === 'undefined'){
             return !!
                 window.WebGLRenderingContext &&
                 (canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
-        } catch(e) {
+        } catch (e) {
             return false;
         }
     }
@@ -3954,7 +4206,7 @@ if(typeof cornerstone === 'undefined'){
             var val = Math.abs(pixelData[i]);
             data[offset++] = parseInt(val & 0xFF, 10);
             data[offset++] = parseInt(val >> 8, 10);
-            data[offset++] = pixelData[i] < 0 ? 0: 1; // 0 For negative, 1 for positive
+            data[offset++] = pixelData[i] < 0 ? 0 : 1; // 0 For negative, 1 for positive
         }
         return data;
     }
@@ -3971,32 +4223,32 @@ if(typeof cornerstone === 'undefined'){
         'uniform float intercept;' +
         'uniform int invert;' +
         'varying vec2 v_texCoord;' +
-        
+
         'void main() {' +
-            // Get texture
-            'vec4 color = texture2D(u_image, v_texCoord);' +
+        // Get texture
+        'vec4 color = texture2D(u_image, v_texCoord);' +
 
-            // Calculate luminance from packed texture
-            'float intensity = color.r*256.0 + color.g*65536.0;'+
+        // Calculate luminance from packed texture
+        'float intensity = color.r*256.0 + color.g*65536.0;' +
 
-            'if (color.b == 0.0)' +
-                'intensity = -intensity;' +
+        'if (color.b == 0.0)' +
+        'intensity = -intensity;' +
 
-            // Rescale based on slope and window settings
-            'intensity = intensity * slope + intercept;'+
-            'float center0 = wc - 0.5;'+
-            'float width0 = max(ww, 1.0);' +
-            'intensity = (intensity - center0) / width0 + 0.5;'+
+        // Rescale based on slope and window settings
+        'intensity = intensity * slope + intercept;' +
+        'float center0 = wc - 0.5;' +
+        'float width0 = max(ww, 1.0);' +
+        'intensity = (intensity - center0) / width0 + 0.5;' +
 
-            // Clamp intensity
-            'intensity = clamp(intensity, 0.0, 1.0);' +
+        // Clamp intensity
+        'intensity = clamp(intensity, 0.0, 1.0);' +
 
-            // RGBA output
-            'gl_FragColor = vec4(intensity, intensity, intensity, 1.0);' +
+        // RGBA output
+        'gl_FragColor = vec4(intensity, intensity, intensity, 1.0);' +
 
-            // Apply any inversion necessary
-            'if (invert == 1)' +
-                'gl_FragColor.rgb = 1.0 - gl_FragColor.rgb;' +
+        // Apply any inversion necessary
+        'if (invert == 1)' +
+        'gl_FragColor.rgb = 1.0 - gl_FragColor.rgb;' +
         '}';
 
     cornerstone.webGL.shaders.int16 = shader;
@@ -4030,7 +4282,7 @@ if(typeof cornerstone === 'undefined'){
 
         for (var i = 0; i < pixelData.length; i++) {
             data[offset++] = parseInt(pixelData[i], 10);
-            data[offset++] = pixelData[i] < 0 ? 0: 1; // 0 For negative, 1 for positive
+            data[offset++] = pixelData[i] < 0 ? 0 : 1; // 0 For negative, 1 for positive
         }
         return data;
     }
@@ -4048,32 +4300,32 @@ if(typeof cornerstone === 'undefined'){
         'uniform float minPixelValue;' +
         'uniform int invert;' +
         'varying vec2 v_texCoord;' +
-        
+
         'void main() {' +
-            // Get texture
-            'vec4 color = texture2D(u_image, v_texCoord);' +
+        // Get texture
+        'vec4 color = texture2D(u_image, v_texCoord);' +
 
-            // Calculate luminance from packed texture
-            'float intensity = color.r*256.;'+
+        // Calculate luminance from packed texture
+        'float intensity = color.r*256.;' +
 
-            'if (color.a == 0.0)' +
-                'intensity = -intensity;' +
+        'if (color.a == 0.0)' +
+        'intensity = -intensity;' +
 
-            // Rescale based on slope and window settings
-            'intensity = intensity * slope + intercept;'+
-            'float center0 = wc - 0.5;'+
-            'float width0 = max(ww, 1.0);' +
-            'intensity = (intensity - center0) / width0 + 0.5;'+
+        // Rescale based on slope and window settings
+        'intensity = intensity * slope + intercept;' +
+        'float center0 = wc - 0.5;' +
+        'float width0 = max(ww, 1.0);' +
+        'intensity = (intensity - center0) / width0 + 0.5;' +
 
-            // Clamp intensity
-            'intensity = clamp(intensity, 0.0, 1.0);' +
+        // Clamp intensity
+        'intensity = clamp(intensity, 0.0, 1.0);' +
 
-            // RGBA output
-            'gl_FragColor = vec4(intensity, intensity, intensity, 1.0);' +
+        // RGBA output
+        'gl_FragColor = vec4(intensity, intensity, intensity, 1.0);' +
 
-            // Apply any inversion necessary
-            'if (invert == 1)' +
-                'gl_FragColor.rgb = 1.0 - gl_FragColor.rgb;' +
+        // Apply any inversion necessary
+        'if (invert == 1)' +
+        'gl_FragColor.rgb = 1.0 - gl_FragColor.rgb;' +
         '}';
 
     cornerstone.webGL.shaders.int8 = shader;
@@ -4111,7 +4363,7 @@ if(typeof cornerstone === 'undefined'){
 
         // NOTE: As of Nov 2014, most javascript engines have lower performance when indexing negative indexes.
         // We have a special code path for this case that improves performance.  Thanks to @jpambrun for this enhancement
-        if (minPixelValue < 0){
+        if (minPixelValue < 0) {
             while (storedPixelDataIndex < numStoredPixels) {
                 data[canvasImageDataIndex++] = storedPixelData[storedPixelDataIndex++] + (-minPixelValue); // red
                 data[canvasImageDataIndex++] = storedPixelData[storedPixelDataIndex++] + (-minPixelValue); // green
@@ -4144,24 +4396,24 @@ if(typeof cornerstone === 'undefined'){
         'varying vec2 v_texCoord;' +
 
         'void main() {' +
-            
-            // Get texture
-            'vec3 color = texture2D(u_image, v_texCoord).xyz;' +
 
-            // Rescale based on slope and intercept 
-            'color = color * 256.0 * slope + intercept;' +
-            
-            // Apply window settings
-            'float center0 = wc - 0.5 - minPixelValue;'+
-            'float width0 = max(ww, 1.0);' +
-            'color = (color - center0) / width0 + 0.5;'+
+        // Get texture
+        'vec3 color = texture2D(u_image, v_texCoord).xyz;' +
 
-            // RGBA output
-            'gl_FragColor = vec4(color, 1);' +
-            
-            // Apply any inversion necessary
-            'if (invert == 1)' +
-                'gl_FragColor.rgb = 1. - gl_FragColor.rgb;' +
+        // Rescale based on slope and intercept 
+        'color = color * 256.0 * slope + intercept;' +
+
+        // Apply window settings
+        'float center0 = wc - 0.5 - minPixelValue;' +
+        'float width0 = max(ww, 1.0);' +
+        'color = (color - center0) / width0 + 0.5;' +
+
+        // RGBA output
+        'gl_FragColor = vec4(color, 1);' +
+
+        // Apply any inversion necessary
+        'if (invert == 1)' +
+        'gl_FragColor.rgb = 1. - gl_FragColor.rgb;' +
         '}';
 
     cornerstone.webGL.shaders.rgb = shader;
@@ -4217,29 +4469,29 @@ if(typeof cornerstone === 'undefined'){
         'uniform float intercept;' +
         'uniform int invert;' +
         'varying vec2 v_texCoord;' +
-        
+
         'void main() {' +
-            // Get texture
-            'vec4 color = texture2D(u_image, v_texCoord);' +
+        // Get texture
+        'vec4 color = texture2D(u_image, v_texCoord);' +
 
-            // Calculate luminance from packed texture
-            'float intensity = color.r*256.0 + color.a*65536.0;'+
+        // Calculate luminance from packed texture
+        'float intensity = color.r*256.0 + color.a*65536.0;' +
 
-            // Rescale based on slope and window settings
-            'intensity = intensity * slope + intercept;'+
-            'float center0 = wc - 0.5;'+
-            'float width0 = max(ww, 1.0);' +
-            'intensity = (intensity - center0) / width0 + 0.5;'+
+        // Rescale based on slope and window settings
+        'intensity = intensity * slope + intercept;' +
+        'float center0 = wc - 0.5;' +
+        'float width0 = max(ww, 1.0);' +
+        'intensity = (intensity - center0) / width0 + 0.5;' +
 
-            // Clamp intensity
-            'intensity = clamp(intensity, 0.0, 1.0);' +
+        // Clamp intensity
+        'intensity = clamp(intensity, 0.0, 1.0);' +
 
-            // RGBA output
-            'gl_FragColor = vec4(intensity, intensity, intensity, 1.0);' +
+        // RGBA output
+        'gl_FragColor = vec4(intensity, intensity, intensity, 1.0);' +
 
-            // Apply any inversion necessary
-            'if (invert == 1)' +
-                'gl_FragColor.rgb = 1.0 - gl_FragColor.rgb;' +
+        // Apply any inversion necessary
+        'if (invert == 1)' +
+        'gl_FragColor.rgb = 1.0 - gl_FragColor.rgb;' +
         '}';
 
     cornerstone.webGL.shaders.uint16 = shader;
@@ -4287,29 +4539,29 @@ if(typeof cornerstone === 'undefined'){
         //'uniform float minPixelValue;' +
         'uniform int invert;' +
         'varying vec2 v_texCoord;' +
-        
+
         'void main() {' +
-            // Get texture
-            'vec4 color = texture2D(u_image, v_texCoord);' +
+        // Get texture
+        'vec4 color = texture2D(u_image, v_texCoord);' +
 
-            // Calculate luminance from packed texture
-            'float intensity = color.r*256.0;'+
+        // Calculate luminance from packed texture
+        'float intensity = color.r*256.0;' +
 
-            // Rescale based on slope and window settings
-            'intensity = intensity * slope + intercept;'+
-            'float center0 = wc - 0.5;'+
-            'float width0 = max(ww, 1.0);' +
-            'intensity = (intensity - center0) / width0 + 0.5;'+
+        // Rescale based on slope and window settings
+        'intensity = intensity * slope + intercept;' +
+        'float center0 = wc - 0.5;' +
+        'float width0 = max(ww, 1.0);' +
+        'intensity = (intensity - center0) / width0 + 0.5;' +
 
-            // Clamp intensity
-            'intensity = clamp(intensity, 0.0, 1.0);' +
+        // Clamp intensity
+        'intensity = clamp(intensity, 0.0, 1.0);' +
 
-            // RGBA output
-            'gl_FragColor = vec4(intensity, intensity, intensity, 1.0);' +
+        // RGBA output
+        'gl_FragColor = vec4(intensity, intensity, intensity, 1.0);' +
 
-            // Apply any inversion necessary
-            'if (invert == 1)' +
-                'gl_FragColor.rgb = 1.0 - gl_FragColor.rgb;' +
+        // Apply any inversion necessary
+        'if (invert == 1)' +
+        'gl_FragColor.rgb = 1.0 - gl_FragColor.rgb;' +
         '}';
 
     cornerstone.webGL.shaders.uint8 = shader;
@@ -4351,7 +4603,7 @@ if(typeof cornerstone === 'undefined'){
 
         // cache size has been exceeded, create list of images sorted by timeStamp
         // so we can purge the least recently used image
-        function compare(a,b) {
+        function compare(a, b) {
             if (a.timeStamp > b.timeStamp) {
                 return -1;
             }
@@ -4363,12 +4615,14 @@ if(typeof cornerstone === 'undefined'){
         cachedImages.sort(compare);
 
         // remove images as necessary
-        while(cacheSizeInBytes > maximumSizeInBytes) {
+        while (cacheSizeInBytes > maximumSizeInBytes) {
             var lastCachedImage = cachedImages[cachedImages.length - 1];
             cacheSizeInBytes -= lastCachedImage.sizeInBytes;
             delete imageCache[lastCachedImage.imageId];
             cachedImages.pop();
-            $(cornerstone).trigger('CornerstoneWebGLTextureRemoved', {imageId: lastCachedImage.imageId});
+            $(cornerstone).trigger('CornerstoneWebGLTextureRemoved', {
+                imageId: lastCachedImage.imageId
+            });
         }
 
         var cacheInfo = cornerstone.imageCache.getCacheInfo();
@@ -4395,9 +4649,9 @@ if(typeof cornerstone === 'undefined'){
         }
 
         var cachedImage = {
-            imageId : imageId,
-            imageTexture : imageTexture,
-            timeStamp : new Date(),
+            imageId: imageId,
+            imageTexture: imageTexture,
+            timeStamp: new Date(),
             sizeInBytes: imageTexture.sizeInBytes
         };
 
@@ -4436,7 +4690,7 @@ if(typeof cornerstone === 'undefined'){
         if (cachedImage === undefined) {
             throw "removeImageTexture: imageId must not be undefined";
         }
-        cachedImages.splice( cachedImages.indexOf(cachedImage), 1);
+        cachedImages.splice(cachedImages.indexOf(cachedImage), 1);
         cacheSizeInBytes -= cachedImage.sizeInBytes;
         delete imageCache[imageId];
 
@@ -4445,8 +4699,8 @@ if(typeof cornerstone === 'undefined'){
 
     function getCacheInfo() {
         return {
-            maximumSizeInBytes : maximumSizeInBytes,
-            cacheSizeInBytes : cacheSizeInBytes,
+            maximumSizeInBytes: maximumSizeInBytes,
+            cacheSizeInBytes: cacheSizeInBytes,
             numberOfImagesCached: cachedImages.length
         };
     }
@@ -4461,11 +4715,11 @@ if(typeof cornerstone === 'undefined'){
 
     // module exports
     cornerstone.webGL.textureCache = {
-        putImageTexture : putImageTexture,
+        putImageTexture: putImageTexture,
         getImageTexture: getImageTexture,
         removeImageTexture: removeImageTexture,
         setMaximumSizeBytes: setMaximumSizeBytes,
-        getCacheInfo : getCacheInfo,
+        getCacheInfo: getCacheInfo,
         purgeCache: purgeCache,
         cachedImages: cachedImages
     };
@@ -4485,11 +4739,11 @@ if(typeof cornerstone === 'undefined'){
         'uniform vec2 u_resolution;' +
         'varying vec2 v_texCoord;' +
         'void main() {' +
-            'vec2 zeroToOne = a_position / u_resolution;' +
-            'vec2 zeroToTwo = zeroToOne * 2.0;' +
-            'vec2 clipSpace = zeroToTwo - 1.0;' +
-            'gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);' +
-            'v_texCoord = a_texCoord;' +
+        'vec2 zeroToOne = a_position / u_resolution;' +
+        'vec2 zeroToTwo = zeroToOne * 2.0;' +
+        'vec2 clipSpace = zeroToTwo - 1.0;' +
+        'gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);' +
+        'v_texCoord = a_texCoord;' +
         '}';
 
 }(cornerstone));
